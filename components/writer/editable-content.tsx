@@ -100,7 +100,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
           className="flex-1 font-mono text-sm p-4 resize-none h-full whitespace-pre-wrap break-words min-h-[564px]"
         />
       ) : (
-        <div className="article-preview flex-1 border rounded-md p-4 bg-white overflow-auto min-h-[564px]">
+        <div className="article-preview flex-1 p-4 bg-white min-h-[564px]">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
               <div className="text-6xl mb-4">

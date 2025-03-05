@@ -30,7 +30,6 @@ export const WORD_COUNT_OPTIONS = [
 export const MODEL_OPTIONS = [
   { value: 'chat-model-large', label: '通用大模型' },
   { value: 'chat-model-reasoning', label: '推理增强模型' },
-  { value: 'chat-model-creative', label: '创意写作模型' },
 ];
 
 export const GENDER_OPTIONS = [
