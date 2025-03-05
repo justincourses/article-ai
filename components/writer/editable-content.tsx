@@ -7,6 +7,8 @@ import { Eye, Edit2, Copy, Check } from 'lucide-react'
 import { Message } from 'ai'
 import { marked } from 'marked'
 import { throttle } from 'lodash'
+import { useContentStore } from '@/store/writer/content-store'
+import { CONTENT_TABS } from '@/constants/writer'
 
 interface EditableContentProps {
   messages: Message[]
@@ -18,8 +20,16 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
   const [isEditing, setIsEditing] = useState(false)
   const [renderedContent, setRenderedContent] = useState('')
   const [isCopied, setIsCopied] = useState(false)
+  const { activeContentTab } = useContentStore()
   const lastMessage = messages.filter(m => m.role === 'assistant').pop()
   const content = lastMessage?.content || ''
+
+  // Reset rendered content when messages change or are cleared
+  useEffect(() => {
+    if (messages.length === 0) {
+      setRenderedContent('');
+    }
+  }, [messages]);
 
   const throttledMarkdownRender = useMemo(
     () => throttle((text: string) => {
@@ -92,7 +102,23 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
       ) : (
         <div className="article-preview flex-1 border rounded-md p-4 bg-white overflow-auto min-h-[564px]">
           {messages.length === 0 ? (
-            <div className="text-gray-400 italic">暂无内容</div>
+            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+              <div className="text-6xl mb-4">
+                {/* Display different icons based on the content type */}
+                {content === '' && (
+                  <>
+                    {activeContentTab === CONTENT_TABS.OUTLINE && '🗒️'}
+                    {activeContentTab === CONTENT_TABS.ARTICLE && '📝'}
+                    {activeContentTab === CONTENT_TABS.SUMMARY && '📋'}
+                  </>
+                )}
+              </div>
+              <div className="text-lg">
+                {activeContentTab === CONTENT_TABS.OUTLINE && '暂无大纲内容，请点击"生成大纲"按钮'}
+                {activeContentTab === CONTENT_TABS.ARTICLE && '暂无文章内容，请先生成大纲，然后点击"生成文章"按钮'}
+                {activeContentTab === CONTENT_TABS.SUMMARY && '暂无摘要内容，请先生成文章，然后点击"生成摘要"按钮'}
+              </div>
+            </div>
           ) : (
             messages.map(
               (message, index) =>

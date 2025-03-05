@@ -1,0 +1,99 @@
+'use client'
+
+import React from 'react'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useWriterConfig } from '@/store/writer/config'
+import { STYLE_OPTIONS, WORD_COUNT_OPTIONS, MODEL_OPTIONS } from '@/constants/writer'
+
+export function BasicConfigTab() {
+  const { articleConfig, setArticleConfig } = useWriterConfig()
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="topic">
+          文章主题 <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="topic"
+          placeholder="输入文章主题"
+          value={articleConfig.topic}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setArticleConfig({ ...articleConfig, topic: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="style">
+          文章风格 <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          value={articleConfig.style}
+          onValueChange={(value: string) => setArticleConfig({ ...articleConfig, style: value })}
+        >
+          <SelectTrigger id="style">
+            <SelectValue placeholder="选择文章风格" />
+          </SelectTrigger>
+          <SelectContent>
+            {STYLE_OPTIONS.map(option => (
+              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="wordCount">
+          文章篇幅 <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          value={articleConfig.wordCount}
+          onValueChange={(value: string) => setArticleConfig({ ...articleConfig, wordCount: value })}
+        >
+          <SelectTrigger id="wordCount">
+            <SelectValue placeholder="选择文章篇幅" />
+          </SelectTrigger>
+          <SelectContent>
+            {WORD_COUNT_OPTIONS.map(option => (
+              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="coreIdeas">
+          核心思路 <span className="text-red-500">*</span>
+        </Label>
+        <Textarea
+          id="coreIdeas"
+          placeholder="描述您文章的核心思路和要点"
+          value={articleConfig.coreIdeas}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setArticleConfig({ ...articleConfig, coreIdeas: e.target.value })}
+          className="min-h-[100px]"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="model">
+          生成模型 <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          value={articleConfig.model}
+          onValueChange={(value: string) => setArticleConfig({ ...articleConfig, model: value })}
+        >
+          <SelectTrigger id="model">
+            <SelectValue placeholder="选择生成模型" />
+          </SelectTrigger>
+          <SelectContent>
+            {MODEL_OPTIONS.map(option => (
+              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  )
+}
