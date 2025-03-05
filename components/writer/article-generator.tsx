@@ -47,10 +47,16 @@ export function ArticleGenerator() {
     handleInputChange: handleOutlineInputChange,
     handleSubmit: handleOutlineSubmit,
   } = useChat({
-    api: '/api/chat',
+    api: '/api/structure',
     id: 'outline-generator',
     body: {
-      selectedChatModel: articleConfig.model || 'chat-model-large'
+      selectedChatModel: articleConfig.model || 'chat-model-large',
+      topic: articleConfig.topic,
+      style: articleConfig.style,
+      coreIdeas: articleConfig.coreIdeas,
+      wordCount: articleConfig.wordCount,
+      targetAudience: articleConfig.targetAudience,
+      exampleArticle: articleConfig.exampleArticle
     },
     onFinish: (message) => {
       setOutline(message.content);
@@ -66,10 +72,14 @@ export function ArticleGenerator() {
     handleInputChange: handleArticleInputChange,
     handleSubmit: handleArticleSubmit,
   } = useChat({
-    api: '/api/chat',
+    api: '/api/article',
     id: 'article-generator',
     body: {
-      selectedChatModel: articleConfig.model || 'chat-model-large'
+      selectedChatModel: articleConfig.model || 'chat-model-reasoning',
+      topic: articleConfig.topic,
+      style: articleConfig.style,
+      coreIdeas: articleConfig.coreIdeas,
+      outline: outline
     },
     onFinish: (message) => {
       setArticle(message.content);
@@ -89,34 +99,10 @@ export function ArticleGenerator() {
     outlineMessages.splice(0, outlineMessages.length);
     articleMessages.splice(0, articleMessages.length);
 
-    const prompt = `根据以下要求生成一篇文章的思维导图结构：
-
-主题：${articleConfig.topic}
-风格：${articleConfig.style}
-核心思路：${articleConfig.coreIdeas}
-文章篇幅：${articleConfig.wordCount}
-目标人群：
-- 年龄层次：${articleConfig.targetAudience?.ageRange || '不限'}
-- 性别倾向：${articleConfig.targetAudience?.gender || '不限'}
-- 消费层次：${articleConfig.targetAudience?.incomeLevel || '不限'}
-- 兴趣类目：${articleConfig.targetAudience?.interests?.join('、') || '不限'}
-- 用户特征：${articleConfig.targetAudience?.userTraits || '不限'}
-${articleConfig.exampleArticle ? `参考文章：${articleConfig.exampleArticle}` : ''}
-
-要求：
-1. 使用 Markdown 格式的缩进列表
-2. 结构要清晰，层次分明
-3. 每个要点要简洁明了
-4. 保持适当的缩进以表示层级关系
-5. 确保内容适合目标人群的阅读习惯和兴趣
-6. 根据指定篇幅合理规划各部分内容比例
-7. 内容要符合用户特征描述的偏好和行为习惯
-
-直接返回 Markdown 格式的内容，不要使用代码块。`;
-
+    // 发送请求到新的结构生成API
     await appendOutline({
       role: 'user',
-      content: prompt,
+      content: 'generate outline', // 简化的内容，实际提示词在服务器端构建
       id: uuidv4(),
     });
   };
@@ -132,28 +118,10 @@ ${articleConfig.exampleArticle ? `参考文章：${articleConfig.exampleArticle}
     // 清空文章消息历史
     articleMessages.splice(0, articleMessages.length);
 
-    const prompt = `根据以下文章结构生成一篇完整的文章：
-
-# 文章要求
-主题：${articleConfig.topic}
-风格：${articleConfig.style}
-核心思路：${articleConfig.coreIdeas}
-${requirements ? `补充要求：${requirements}` : ''}
-
-# 文章结构
-${outline}
-
-要求：
-1. 按照上述结构生成一篇完整的文章
-2. 保持文章结构的层次性和逻辑性
-3. 使用 Markdown 格式
-4. 语言要流畅自然，符合指定的风格
-
-直接返回 Markdown 格式的文章内容，不要使用代码块。`;
-
+    // 发送请求到新的文章生成API
     await appendArticle({
       role: 'user',
-      content: prompt,
+      content: requirements ? `generate article with requirements: ${requirements}` : 'generate article', // 在内容中包含要求
       id: uuidv4(),
     });
   };
