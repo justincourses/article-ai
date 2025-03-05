@@ -100,7 +100,7 @@ export function ArticleGenerator() {
     api: '/api/summary',
     id: 'summary-generator',
     body: {
-      selectedChatModel: 'chat-model-small',
+      selectedChatModel: 'chat-model-large',
       article: article
     },
     onFinish: (message) => {

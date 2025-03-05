@@ -78,8 +78,8 @@ ${article}
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
-        model: myProvider.languageModel(selectedChatModel || 'chat-model-small'),
-        system: systemPrompt({ selectedChatModel: selectedChatModel || 'chat-model-small' }),
+        model: myProvider.languageModel(selectedChatModel || 'chat-model-large'),
+        system: systemPrompt({ selectedChatModel: selectedChatModel || 'chat-model-large' }),
         messages: promptMessages,
         maxSteps: 3,
         experimental_transform: smoothStream({ chunking: "word" }),
