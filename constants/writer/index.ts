@@ -22,9 +22,8 @@ export const STYLE_OPTIONS = [
 
 export const WORD_COUNT_OPTIONS = [
   { value: 'short', label: '短文 (800字以内)' },
-  { value: 'medium', label: '中等 (800-2000字)' },
-  { value: 'long', label: '长文 (2000-5000字)' },
-  { value: 'extensive', label: '特长 (5000字以上)' },
+  { value: 'medium', label: '中等 (800-1500字)' },
+  { value: 'long', label: '长文 (1500-3000字)' },
 ];
 
 export const MODEL_OPTIONS = [
