@@ -1,26 +1,43 @@
-.gradient {
-  position: relative;
-  background-image: repeating-linear-gradient(
-    to right,
-    #63DFFA,
-    #6C47FF,
-    #63DFFA
+.bg-gradient-text {
+  @apply bg-clip-text text-transparent bg-[length:400%_400%];
+  background-image: linear-gradient(
+    135deg,
+    #6366f1,
+    #ec4899,
+    #3b82f6,
+    #10b981,
+    #6366f1
   );
-  z-index: 1;
-  background-position-x: 0%;
-  background-size: 200%;
-  animation: gradimate 3s linear infinite;
-  background-clip: text;
 }
 
-@keyframes gradimate {
+@keyframes gradient-normal {
   0% {
-    background-position-x: 0%;
+    background-position: 0% 50%;
   }
   50% {
-    background-position-x: 100%;
+    background-position: 100% 50%;
   }
   100% {
-    background-position-x: 200%;
+    background-position: 0% 50%;
   }
+}
+
+@keyframes gradient-reverse {
+  0% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient-normal {
+  animation: gradient-normal 30s ease infinite;
+}
+
+.animate-gradient-reverse {
+  animation: gradient-reverse 30s ease infinite;
 }
