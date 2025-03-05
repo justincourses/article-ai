@@ -2,7 +2,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import Script from "next/script";
 import { Metadata } from "next";
-import localFont from "next/font/local";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://article.zhaikr.com/"),
@@ -12,23 +11,13 @@ export const metadata: Metadata = {
   openGraph: { images: ["/og.png"] },
 };
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-});
-
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-});
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en">
       <ClerkProvider
         appearance={{
           variables: { colorPrimary: "#000000" },

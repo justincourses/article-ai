@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useWriterConfig } from '../../store/writerConfig'
+import { useWriterConfig } from '../../store/writer/config'
 
 export default function WriterConfigPanel() {
   const {
