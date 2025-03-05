@@ -24,11 +24,21 @@ export interface ArticleParagraph {
 // Define article configuration type
 export interface ArticleConfig {
   topic: string
-  structureTemplate: string
   style: string
   coreIdeas: string
-  exampleArticle: string
+  exampleArticle?: string
+  model: string
+  wordCount: string
+  targetAudience: {
+    ageRange: string
+    gender: string
+    incomeLevel: string
+    interests: string[]
+    userTraits: string
+  }
 }
+
+export type Step = 'outline' | 'article'
 
 // Define the store state and actions
 interface WriterConfigState {
@@ -39,6 +49,9 @@ interface WriterConfigState {
   configComplete: boolean
   paragraphsComplete: boolean
   activeTab: 'config' | 'paragraphs' | 'preview'
+  outline: string
+  article: string
+  activeStep: Step
 
   // Writer config actions
   setFontSize: (size: number) => void
@@ -63,6 +76,9 @@ interface WriterConfigState {
   resetArticle: () => void
   resetParagraphs: () => void
   resetPreview: () => void
+  setOutline: (outline: string) => void
+  setArticle: (article: string) => void
+  setActiveStep: (step: Step) => void
 }
 
 // Default configuration
@@ -79,12 +95,20 @@ const defaultConfig: WriterConfig = {
 }
 
 // Default article configuration
-const defaultArticleConfig: ArticleConfig = {
+export const defaultArticleConfig: ArticleConfig = {
   topic: '',
-  structureTemplate: '',
   style: '',
   coreIdeas: '',
-  exampleArticle: ''
+  exampleArticle: '',
+  model: 'chat-model-large',
+  wordCount: '',
+  targetAudience: {
+    ageRange: '',
+    gender: '',
+    incomeLevel: '',
+    interests: [],
+    userTraits: ''
+  }
 }
 
 // Create the store with persistence
@@ -98,6 +122,9 @@ export const useWriterConfig = create<WriterConfigState>()(
       configComplete: false,
       paragraphsComplete: false,
       activeTab: 'config',
+      outline: '',
+      article: '',
+      activeStep: 'outline',
 
       // Writer config actions
       setFontSize: (size) =>
@@ -142,10 +169,6 @@ export const useWriterConfig = create<WriterConfigState>()(
       setArticleConfig: (config) =>
         set((state) => ({
           articleConfig: { ...state.articleConfig, ...config },
-          // Reset dependencies when config changes
-          paragraphs: [],
-          markdownContent: '',
-          paragraphsComplete: false
         })),
 
       setParagraphs: (paragraphs) =>
@@ -185,7 +208,10 @@ export const useWriterConfig = create<WriterConfigState>()(
           markdownContent: '',
           configComplete: false,
           paragraphsComplete: false,
-          activeTab: 'config'
+          activeTab: 'config',
+          outline: '',
+          article: '',
+          activeStep: 'outline'
         }),
 
       resetParagraphs: () =>
@@ -196,7 +222,13 @@ export const useWriterConfig = create<WriterConfigState>()(
         }),
 
       resetPreview: () =>
-        set({ markdownContent: '' })
+        set({ markdownContent: '' }),
+
+      setOutline: (outline) => set({ outline }),
+
+      setArticle: (article) => set({ article }),
+
+      setActiveStep: (step) => set({ activeStep: step }),
     }),
     {
       name: 'writer-config-storage', // name for the localStorage key
@@ -207,7 +239,10 @@ export const useWriterConfig = create<WriterConfigState>()(
         markdownContent: state.markdownContent,
         configComplete: state.configComplete,
         paragraphsComplete: state.paragraphsComplete,
-        activeTab: state.activeTab
+        activeTab: state.activeTab,
+        outline: state.outline,
+        article: state.article,
+        activeStep: state.activeStep
       }), // persist all article generation state
     }
   )

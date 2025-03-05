@@ -1,286 +1,532 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useWriterConfig } from '@/store/writer/config'
-import { AlertCircle } from 'lucide-react'
-import { MarkdownRenderer } from './markdown-renderer'
-import { generateArticleParagraphs, generateMarkdownContent, regenerateParagraph } from '@/store/writer/article-service'
+import { useWriterConfig, defaultArticleConfig, Step } from '@/store/writer/config'
+import { Loader2 } from 'lucide-react'
+import { useChat } from 'ai/react'
+import { v4 as uuidv4 } from 'uuid'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { EditableContent } from './editable-content'
 
 export function ArticleGenerator() {
   const {
     articleConfig,
-    paragraphs,
-    markdownContent,
-    configComplete,
-    paragraphsComplete,
-    activeTab,
     setArticleConfig,
-    setParagraphs,
-    updateParagraph,
-    setMarkdownContent,
-    setConfigComplete,
-    setParagraphsComplete,
-    setActiveTab
+    outline,
+    setOutline,
+    article,
+    setArticle,
+    activeStep,
+    setActiveStep,
   } = useWriterConfig()
 
-  const [isGeneratingParagraphs, setIsGeneratingParagraphs] = useState(false)
-  const [isRegeneratingParagraph, setIsRegeneratingParagraph] = useState<string | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [additionalRequirements, setAdditionalRequirements] = useState('')
 
-  // Handle tab change
-  const handleTabChange = (tab: 'config' | 'paragraphs' | 'preview') => {
-    setActiveTab(tab)
+  // 更新文章配置类型
+  type TargetAudience = {
+    ageRange: string;
+    gender: string;
+    incomeLevel: string;
+    interests: string[];
+    userTraits: string;
   }
 
-  // Generate paragraphs based on config
-  const handleGenerateParagraphs = async () => {
-    setIsGeneratingParagraphs(true)
-    try {
-      const newParagraphs = await generateArticleParagraphs(articleConfig)
-      setParagraphs(newParagraphs)
-      setConfigComplete(true)
-      setActiveTab('paragraphs')
-    } catch (error) {
-      console.error('Error generating paragraphs:', error)
-      // Handle error (could show a toast notification here)
-    } finally {
-      setIsGeneratingParagraphs(false)
-    }
-  }
+  // 使用 useChat hook 生成大纲
+  const {
+    messages: outlineMessages,
+    append: appendOutline,
+    isLoading: isGeneratingOutline,
+    input: outlineInput,
+    handleInputChange: handleOutlineInputChange,
+    handleSubmit: handleOutlineSubmit,
+  } = useChat({
+    api: '/api/chat',
+    id: 'outline-generator',
+    body: {
+      selectedChatModel: articleConfig.model || 'chat-model-large'
+    },
+    onFinish: (message) => {
+      setOutline(message.content);
+    },
+  })
 
-  // Generate preview based on paragraphs
-  const handleGeneratePreview = () => {
-    const content = generateMarkdownContent(paragraphs)
-    setMarkdownContent(content)
-    setParagraphsComplete(true)
-    setActiveTab('preview')
-  }
+  // 使用 useChat hook 生成文章
+  const {
+    messages: articleMessages,
+    append: appendArticle,
+    isLoading: isGeneratingArticle,
+    input: articleInput,
+    handleInputChange: handleArticleInputChange,
+    handleSubmit: handleArticleSubmit,
+  } = useChat({
+    api: '/api/chat',
+    id: 'article-generator',
+    body: {
+      selectedChatModel: articleConfig.model || 'chat-model-large'
+    },
+    onFinish: (message) => {
+      setArticle(message.content);
+    },
+  })
 
-  // Handle paragraph edit
-  const handleParagraphEdit = (id: string, newContent: string) => {
-    updateParagraph(id, newContent)
-  }
+  // 生成文章结构
+  const handleGenerateOutline = async () => {
+    // 清空原有内容
+    await Promise.all([
+      setOutline(''),
+      setArticle(''),
+      setActiveStep('outline')
+    ]);
 
-  // Handle regenerate paragraph
-  const handleRegenerateParagraph = async (id: string) => {
-    setIsRegeneratingParagraph(id)
-    try {
-      const updatedParagraph = await regenerateParagraph(id, paragraphs, articleConfig)
-      updateParagraph(id, updatedParagraph.content)
-    } catch (error) {
-      console.error('Error regenerating paragraph:', error)
-      // Handle error (could show a toast notification here)
-    } finally {
-      setIsRegeneratingParagraph(null)
-    }
-  }
+    // 清空消息历史
+    outlineMessages.splice(0, outlineMessages.length);
+    articleMessages.splice(0, articleMessages.length);
 
-  // Check if form is valid for generating paragraphs
-  const isFormValid = articleConfig.topic && articleConfig.structureTemplate && articleConfig.style
+    const prompt = `根据以下要求生成一篇文章的思维导图结构：
+
+主题：${articleConfig.topic}
+风格：${articleConfig.style}
+核心思路：${articleConfig.coreIdeas}
+文章篇幅：${articleConfig.wordCount}
+目标人群：
+- 年龄层次：${articleConfig.targetAudience?.ageRange || '不限'}
+- 性别倾向：${articleConfig.targetAudience?.gender || '不限'}
+- 消费层次：${articleConfig.targetAudience?.incomeLevel || '不限'}
+- 兴趣类目：${articleConfig.targetAudience?.interests?.join('、') || '不限'}
+- 用户特征：${articleConfig.targetAudience?.userTraits || '不限'}
+${articleConfig.exampleArticle ? `参考文章：${articleConfig.exampleArticle}` : ''}
+
+要求：
+1. 使用 Markdown 格式的缩进列表
+2. 结构要清晰，层次分明
+3. 每个要点要简洁明了
+4. 保持适当的缩进以表示层级关系
+5. 确保内容适合目标人群的阅读习惯和兴趣
+6. 根据指定篇幅合理规划各部分内容比例
+7. 内容要符合用户特征描述的偏好和行为习惯
+
+直接返回 Markdown 格式的内容，不要使用代码块。`;
+
+    await appendOutline({
+      role: 'user',
+      content: prompt,
+      id: uuidv4(),
+    });
+  };
+
+  // 生成文章内容
+  const handleGenerateArticle = async (requirements?: string) => {
+    // 清空原有内容
+    await Promise.all([
+      setArticle(''),
+      setActiveStep('article')
+    ]);
+
+    // 清空文章消息历史
+    articleMessages.splice(0, articleMessages.length);
+
+    const prompt = `根据以下文章结构生成一篇完整的文章：
+
+# 文章要求
+主题：${articleConfig.topic}
+风格：${articleConfig.style}
+核心思路：${articleConfig.coreIdeas}
+${requirements ? `补充要求：${requirements}` : ''}
+
+# 文章结构
+${outline}
+
+要求：
+1. 按照上述结构生成一篇完整的文章
+2. 保持文章结构的层次性和逻辑性
+3. 使用 Markdown 格式
+4. 语言要流畅自然，符合指定的风格
+
+直接返回 Markdown 格式的文章内容，不要使用代码块。`;
+
+    await appendArticle({
+      role: 'user',
+      content: prompt,
+      id: uuidv4(),
+    });
+  };
+
+  // 检查表单是否有效
+  const isFormValid = articleConfig.topic &&
+    articleConfig.style &&
+    articleConfig.coreIdeas &&
+    articleConfig.wordCount;
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4">
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex space-x-1 border rounded-lg p-1 bg-gray-50">
-            <button
-              onClick={() => handleTabChange('config')}
-              className={`px-4 py-2 rounded-md ${
-                activeTab === 'config' ? 'bg-white shadow-sm' : 'hover:bg-gray-100'
-              }`}
-            >
-              1. 配置
-            </button>
-            <button
-              onClick={() => handleTabChange('paragraphs')}
-              disabled={!configComplete}
-              className={`px-4 py-2 rounded-md ${
-                !configComplete ? 'opacity-50 cursor-not-allowed' :
-                activeTab === 'paragraphs' ? 'bg-white shadow-sm' : 'hover:bg-gray-100'
-              }`}
-            >
-              2. 段落
-            </button>
-            <button
-              onClick={() => handleTabChange('preview')}
-              disabled={!paragraphsComplete}
-              className={`px-4 py-2 rounded-md ${
-                !paragraphsComplete ? 'opacity-50 cursor-not-allowed' :
-                activeTab === 'preview' ? 'bg-white shadow-sm' : 'hover:bg-gray-100'
-              }`}
-            >
-              3. 预览
-            </button>
-          </div>
-
-          {/* 流程提示和提交按钮 */}
-          <div className="flex items-center">
-            <div className="flex items-center text-sm text-gray-500 mr-4">
-              <AlertCircle className="h-4 w-4 mr-1" />
-              <span>修改前序步骤将重置后续内容</span>
-            </div>
-
-            {activeTab === 'config' && (
-              <button
-                onClick={handleGenerateParagraphs}
-                disabled={!isFormValid || isGeneratingParagraphs}
-                className={`py-2 px-4 rounded-md transition-colors ${
-                  !isFormValid || isGeneratingParagraphs
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              >
-                {isGeneratingParagraphs ? '生成中...' : '生成文章段落'}
-              </button>
-            )}
-
-            {activeTab === 'paragraphs' && paragraphs.length > 0 && (
-              <button
-                onClick={handleGeneratePreview}
-                className="py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                生成文章预览
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* 配置选项卡 */}
-        {activeTab === 'config' && (
-          <div className="bg-white rounded-lg border p-6 shadow-sm">
-            <div className="grid gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">文章主题 <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  placeholder="输入您的文章主题或想法"
-                  value={articleConfig.topic}
-                  onChange={(e) => setArticleConfig({ topic: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">结构模板 <span className="text-red-500">*</span></label>
-                  <select
-                    value={articleConfig.structureTemplate}
-                    onChange={(e) => setArticleConfig({ structureTemplate: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-md"
-                  >
-                    <option value="">选择结构模板</option>
-                    <option value="essay">论述文</option>
-                    <option value="story">故事型</option>
-                    <option value="tutorial">教程型</option>
-                    <option value="review">评测型</option>
-                  </select>
+    <div className="flex h-full">
+      {/* Left Panel - Configuration and Generation */}
+      <div className="w-1/2 h-full flex flex-col">
+        <div className="flex-1 p-4 overflow-auto">
+          <div className="space-y-6">
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="basic">基本设置</TabsTrigger>
+                <TabsTrigger value="advanced">高级设置</TabsTrigger>
+              </TabsList>
+              <TabsContent value="basic" className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="topic">
+                    文章主题 <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="topic"
+                    placeholder="输入您的文章主题或想法"
+                    value={articleConfig.topic}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setArticleConfig({ ...articleConfig, topic: e.target.value })}
+                  />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">文章风格 <span className="text-red-500">*</span></label>
-                  <select
+                <div className="space-y-2">
+                  <Label htmlFor="style">
+                    文章风格 <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
                     value={articleConfig.style}
-                    onChange={(e) => setArticleConfig({ style: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-md"
+                    onValueChange={(value: string) => setArticleConfig({ ...articleConfig, style: value })}
                   >
-                    <option value="">选择文章风格</option>
-                    <option value="formal">正式学术</option>
-                    <option value="casual">轻松随意</option>
-                    <option value="persuasive">说服力强</option>
-                    <option value="descriptive">描述细致</option>
-                  </select>
+                    <SelectTrigger id="style">
+                      <SelectValue placeholder="选择文章风格" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="formal">正式学术</SelectItem>
+                      <SelectItem value="casual">轻松随意</SelectItem>
+                      <SelectItem value="persuasive">说服力强</SelectItem>
+                      <SelectItem value="descriptive">描述细致</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">核心思路</label>
-                <textarea
-                  placeholder="描述您文章的核心思路和要点"
-                  value={articleConfig.coreIdeas}
-                  onChange={(e) => setArticleConfig({ coreIdeas: e.target.value })}
-                  rows={3}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="wordCount">
+                    文章篇幅 <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={articleConfig.wordCount}
+                    onValueChange={(value: string) => setArticleConfig({ ...articleConfig, wordCount: value })}
+                  >
+                    <SelectTrigger id="wordCount">
+                      <SelectValue placeholder="选择文章篇幅" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="short">短文 (800字以内)</SelectItem>
+                      <SelectItem value="medium">中等 (800-2000字)</SelectItem>
+                      <SelectItem value="long">长文 (2000-5000字)</SelectItem>
+                      <SelectItem value="extensive">特长 (5000字以上)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">范例文章（可选）</label>
-                <textarea
-                  placeholder="粘贴一篇范例文章，AI将参考其风格和结构"
-                  value={articleConfig.exampleArticle}
-                  onChange={(e) => setArticleConfig({ exampleArticle: e.target.value })}
-                  rows={5}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="coreIdeas">
+                    核心思路 <span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    id="coreIdeas"
+                    placeholder="描述您文章的核心思路和要点"
+                    value={articleConfig.coreIdeas}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setArticleConfig({ ...articleConfig, coreIdeas: e.target.value })}
+                    rows={3}
+                  />
+                </div>
 
-              {!isFormValid && (
-                <p className="text-sm text-red-500">请填写所有必填字段（带 * 的字段）</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 段落选项卡 */}
-        {activeTab === 'paragraphs' && (
-          <div className="bg-white rounded-lg border p-6 shadow-sm">
-            {paragraphs.length > 0 ? (
-              <div className="space-y-4">
-                {paragraphs.map((paragraph) => (
-                  <div key={paragraph.id} className="border rounded-md p-4">
-                    <div className="font-medium mb-2">{paragraph.title}</div>
-                    <textarea
-                      value={paragraph.content}
-                      onChange={(e) => handleParagraphEdit(paragraph.id, e.target.value)}
-                      rows={4}
-                      className="w-full px-3 py-2 border rounded-md mb-2"
-                    />
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => handleRegenerateParagraph(paragraph.id)}
-                        disabled={isRegeneratingParagraph === paragraph.id}
-                        className={`py-1 px-3 border rounded-md text-sm ${
-                          isRegeneratingParagraph === paragraph.id
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'border-gray-300 hover:bg-gray-50'
-                        }`}
+                <div className="space-y-2">
+                  <Label htmlFor="exampleArticle">范例文章（可选）</Label>
+                  <Textarea
+                    id="exampleArticle"
+                    placeholder="粘贴一篇范例文章，AI将参考其风格和结构"
+                    value={articleConfig.exampleArticle}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setArticleConfig({ ...articleConfig, exampleArticle: e.target.value })}
+                    rows={4}
+                  />
+                </div>
+              </TabsContent>
+              <TabsContent value="advanced" className="space-y-4">
+                <div className="space-y-4">
+                  <Label>目标人群（可选）</Label>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ageRange">年龄层次</Label>
+                      <Select
+                        value={articleConfig.targetAudience?.ageRange}
+                        onValueChange={(value: string) => {
+                          const currentAudience = articleConfig.targetAudience || defaultArticleConfig.targetAudience;
+                          setArticleConfig({
+                            ...articleConfig,
+                            targetAudience: {
+                              ...currentAudience,
+                              ageRange: value
+                            }
+                          });
+                        }}
                       >
-                        {isRegeneratingParagraph === paragraph.id ? '生成中...' : '重新生成此段落'}
-                      </button>
+                        <SelectTrigger id="ageRange">
+                          <SelectValue placeholder="选择目标年龄段" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="teens">青少年 (13-19岁)</SelectItem>
+                          <SelectItem value="youngAdults">青年 (20-35岁)</SelectItem>
+                          <SelectItem value="middleAge">中年 (36-50岁)</SelectItem>
+                          <SelectItem value="senior">老年 (51岁以上)</SelectItem>
+                          <SelectItem value="all">不限年龄</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">性别倾向</Label>
+                      <Select
+                        value={articleConfig.targetAudience?.gender}
+                        onValueChange={(value: string) => {
+                          const currentAudience = articleConfig.targetAudience || defaultArticleConfig.targetAudience;
+                          setArticleConfig({
+                            ...articleConfig,
+                            targetAudience: {
+                              ...currentAudience,
+                              gender: value
+                            }
+                          });
+                        }}
+                      >
+                        <SelectTrigger id="gender">
+                          <SelectValue placeholder="选择目标性别" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="male">男性为主</SelectItem>
+                          <SelectItem value="female">女性为主</SelectItem>
+                          <SelectItem value="all">不限性别</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="incomeLevel">消费层次</Label>
+                      <Select
+                        value={articleConfig.targetAudience?.incomeLevel}
+                        onValueChange={(value: string) => {
+                          const currentAudience = articleConfig.targetAudience || defaultArticleConfig.targetAudience;
+                          setArticleConfig({
+                            ...articleConfig,
+                            targetAudience: {
+                              ...currentAudience,
+                              incomeLevel: value
+                            }
+                          });
+                        }}
+                      >
+                        <SelectTrigger id="incomeLevel">
+                          <SelectValue placeholder="选择消费层次" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="budget">大众消费</SelectItem>
+                          <SelectItem value="midRange">中产消费</SelectItem>
+                          <SelectItem value="luxury">高端消费</SelectItem>
+                          <SelectItem value="all">不限消费层次</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="interests">兴趣类目（可多选）</Label>
+                      <Select
+                        value={articleConfig.targetAudience?.interests?.[0] || ''}
+                        onValueChange={(value: string) => {
+                          const currentAudience = articleConfig.targetAudience || defaultArticleConfig.targetAudience;
+                          setArticleConfig({
+                            ...articleConfig,
+                            targetAudience: {
+                              ...currentAudience,
+                              interests: [...(currentAudience.interests || []), value]
+                            }
+                          });
+                        }}
+                      >
+                        <SelectTrigger id="interests">
+                          <SelectValue placeholder="选择兴趣类目" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="technology">科技数码</SelectItem>
+                          <SelectItem value="fashion">时尚美妆</SelectItem>
+                          <SelectItem value="sports">运动健身</SelectItem>
+                          <SelectItem value="food">美食烹饪</SelectItem>
+                          <SelectItem value="travel">旅游出行</SelectItem>
+                          <SelectItem value="education">教育学习</SelectItem>
+                          <SelectItem value="finance">金融理财</SelectItem>
+                          <SelectItem value="entertainment">娱乐休闲</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {articleConfig.targetAudience?.interests && articleConfig.targetAudience.interests.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {articleConfig.targetAudience.interests.map((interest, index) => (
+                            <Button
+                              key={index}
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                const currentAudience = articleConfig.targetAudience || defaultArticleConfig.targetAudience;
+                                const newInterests = currentAudience.interests.filter((_: string, i: number) => i !== index);
+                                setArticleConfig({
+                                  ...articleConfig,
+                                  targetAudience: {
+                                    ...currentAudience,
+                                    interests: newInterests
+                                  }
+                                });
+                              }}
+                            >
+                              {interest} ×
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="userTraits">用户特征描述</Label>
+                      <Textarea
+                        id="userTraits"
+                        placeholder="描述目标用户的其他特征，如：生活方式、价值观、行为习惯等"
+                        value={articleConfig.targetAudience?.userTraits || ''}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                          const currentAudience = articleConfig.targetAudience || defaultArticleConfig.targetAudience;
+                          setArticleConfig({
+                            ...articleConfig,
+                            targetAudience: {
+                              ...currentAudience,
+                              userTraits: e.target.value
+                            }
+                          });
+                        }}
+                        rows={3}
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-10 text-gray-500">
-                请先在配置选项卡中生成文章段落
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 预览选项卡 */}
-        {activeTab === 'preview' && (
-          <div className="bg-white rounded-lg border p-6 shadow-sm">
-            {markdownContent ? (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="border rounded-md p-4 h-96 overflow-auto">
-                  <h3 className="text-sm font-medium mb-2">Markdown</h3>
-                  <pre className="whitespace-pre-wrap text-sm">{markdownContent}</pre>
                 </div>
-
-                <div className="border rounded-md p-4 h-96 overflow-auto">
-                  <h3 className="text-sm font-medium mb-2">HTML 预览</h3>
-                  <MarkdownRenderer markdown={markdownContent} />
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-10 text-gray-500">
-                请先在段落选项卡中生成文章预览
-              </div>
-            )}
+              </TabsContent>
+            </Tabs>
           </div>
-        )}
+
+          {/* Generation Buttons */}
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <Button
+              onClick={async () => {
+                await handleGenerateOutline();
+                setActiveStep('outline');
+              }}
+              disabled={!isFormValid || isGeneratingOutline}
+              className="w-full bg-gradient-to-r from-blue-600/85 via-blue-800/85 to-indigo-800/85 hover:from-indigo-800/85 hover:via-blue-800/85 hover:to-blue-600/85 animate-gradient transition-all duration-500 text-white"
+            >
+              {isGeneratingOutline ? (
+                <div className="flex items-center gap-2 justify-center w-full">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>生成中...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 justify-center w-full">
+                  <span>✨ 生成大纲</span>
+                </div>
+              )}
+            </Button>
+
+            <Button
+              onClick={() => setIsDialogOpen(true)}
+              disabled={!outline || isGeneratingArticle}
+              className="w-full bg-gradient-to-r from-purple-600/85 via-pink-700/85 to-rose-700/85 hover:from-rose-700/85 hover:via-pink-700/85 hover:to-purple-600/85 animate-gradient transition-all duration-500 text-white"
+            >
+              {isGeneratingArticle ? (
+                <div className="flex items-center gap-2 justify-center w-full">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>生成中...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 justify-center w-full">
+                  <span>🎨 {article ? '再次生成文章' : '生成文章'}</span>
+                </div>
+              )}
+            </Button>
+          </div>
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>生成文章</DialogTitle>
+                <DialogDescription>
+                  请确认是否要{article ? '重新' : ''}生成文章？你可以添加补充要求来优化生成结果。
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-4">
+                <Label htmlFor="requirements">补充要求（可选）</Label>
+                <Textarea
+                  id="requirements"
+                  value={additionalRequirements}
+                  onChange={(e) => setAdditionalRequirements(e.target.value)}
+                  placeholder="输入补充要求，例如：文章风格、重点关注的方面等..."
+                  className="mt-2"
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
+                  取消
+                </Button>
+                <Button
+                  onClick={async () => {
+                    setIsDialogOpen(false);
+                    await handleGenerateArticle(additionalRequirements);
+                    setAdditionalRequirements('');
+                  }}
+                  disabled={isGeneratingArticle}
+                >
+                  确认生成
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Right Panel - Content Display */}
+      <div className="w-1/2 h-full flex flex-col border-l">
+        <div className="flex-1 p-4">
+          <Tabs value={activeStep} onValueChange={(value) => setActiveStep(value as Step)} className="h-full">
+            <div className="mb-4">
+              <TabsList className="w-full grid grid-cols-2">
+                <TabsTrigger value="outline" className="flex-1">文章大纲</TabsTrigger>
+                <TabsTrigger value="article" className="flex-1">文章内容</TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="outline" className="h-[calc(100%-48px)] overflow-auto">
+              <EditableContent
+                messages={outlineMessages}
+                isLoading={isGeneratingOutline}
+                onChange={setOutline}
+              />
+            </TabsContent>
+
+            <TabsContent value="article" className="h-[calc(100%-48px)] overflow-auto">
+              <EditableContent
+                messages={articleMessages}
+                isLoading={isGeneratingArticle}
+                onChange={setArticle}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,109 +1,215 @@
 import { v4 as uuidv4 } from 'uuid'
 import { ArticleConfig, ArticleParagraph } from './config'
+import { chatModels } from '@/lib/ai/models'
+import { Message } from 'ai'
 
 // This file would typically contain API calls to a backend service
 // For now, we'll mock the functionality
 
+// Helper function to make API calls with the selected model
+async function callGenerateAPI(prompt: string, selectedModel: string, onProgress?: (text: string) => void) {
+  try {
+    // 构建消息
+    const messages: Message[] = [
+      {
+        id: uuidv4(),
+        role: 'user',
+        content: prompt,
+      },
+    ]
+
+    // 发起请求
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: uuidv4(),
+        messages,
+        selectedChatModel: selectedModel,
+      }),
+    })
+
+    // 获取响应流
+    const reader = response.body?.getReader()
+    if (!reader) {
+      throw new Error('Failed to get response reader')
+    }
+
+    let result = ''
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      // 解码并处理数据
+      const text = new TextDecoder().decode(value)
+      result += text
+
+      // 调用进度回调
+      if (onProgress) {
+        onProgress(result)
+      }
+    }
+
+    return result
+  } catch (error) {
+    console.error('Error calling AI model:', error)
+    throw error
+  }
+}
+
 /**
  * Generate article paragraphs based on the provided configuration
  */
-export async function generateArticleParagraphs(config: ArticleConfig): Promise<ArticleParagraph[]> {
-  // In a real application, this would call an API
-  // For now, we'll simulate a delay and return mock data
-  await new Promise(resolve => setTimeout(resolve, 1000))
+export async function generateArticleParagraphs(
+  config: ArticleConfig,
+  onProgress?: (text: string) => void
+): Promise<ArticleParagraph[]> {
+  // 使用选定的模型生成段落
+  const selectedModel = config.paragraphsModel || 'chat-model-large'
 
-  // Generate paragraphs based on the structure template
-  let paragraphs: ArticleParagraph[] = []
+  try {
+    // 构建提示词
+    const prompt = `
+    请根据以下要求生成一篇文章的段落结构：
 
-  switch (config.structureTemplate) {
-    case 'essay':
-      paragraphs = [
-        { id: uuidv4(), title: '引言', content: `关于"${config.topic}"的引言部分。这是一篇论述文风格的文章。` },
-        { id: uuidv4(), title: '背景', content: '这部分提供了相关的背景信息和上下文。' },
-        { id: uuidv4(), title: '论点一', content: '这是第一个主要论点及其支持证据。' },
-        { id: uuidv4(), title: '论点二', content: '这是第二个主要论点及其支持证据。' },
-        { id: uuidv4(), title: '论点三', content: '这是第三个主要论点及其支持证据。' },
-        { id: uuidv4(), title: '反驳', content: '这部分处理可能的反对意见。' },
-        { id: uuidv4(), title: '结论', content: '总结论点并提出最终观点。' },
-      ]
-      break
-    case 'story':
-      paragraphs = [
-        { id: uuidv4(), title: '开场', content: `关于"${config.topic}"的故事开场。这是一个故事型风格的文章。` },
-        { id: uuidv4(), title: '人物介绍', content: '介绍故事中的主要人物。' },
-        { id: uuidv4(), title: '背景设定', content: '描述故事发生的时间、地点和环境。' },
-        { id: uuidv4(), title: '冲突', content: '介绍故事中的主要冲突或问题。' },
-        { id: uuidv4(), title: '发展', content: '故事情节的发展过程。' },
-        { id: uuidv4(), title: '高潮', content: '故事的高潮部分。' },
-        { id: uuidv4(), title: '结局', content: '故事的结局和收尾。' },
-      ]
-      break
-    case 'tutorial':
-      paragraphs = [
-        { id: uuidv4(), title: '介绍', content: `关于"${config.topic}"的教程介绍。这是一篇教程型风格的文章。` },
-        { id: uuidv4(), title: '所需材料/工具', content: '完成本教程所需的材料或工具列表。' },
-        { id: uuidv4(), title: '步骤一', content: '第一个步骤的详细说明。' },
-        { id: uuidv4(), title: '步骤二', content: '第二个步骤的详细说明。' },
-        { id: uuidv4(), title: '步骤三', content: '第三个步骤的详细说明。' },
-        { id: uuidv4(), title: '常见问题', content: '可能遇到的问题及解决方案。' },
-        { id: uuidv4(), title: '总结', content: '教程的总结和最终成果展示。' },
-      ]
-      break
-    case 'review':
-      paragraphs = [
-        { id: uuidv4(), title: '介绍', content: `关于"${config.topic}"的评测介绍。这是一篇评测型风格的文章。` },
-        { id: uuidv4(), title: '产品概述', content: '被评测产品/服务的基本信息。' },
-        { id: uuidv4(), title: '优点', content: '产品/服务的主要优点。' },
-        { id: uuidv4(), title: '缺点', content: '产品/服务的主要缺点。' },
-        { id: uuidv4(), title: '使用体验', content: '使用产品/服务的实际体验。' },
-        { id: uuidv4(), title: '与竞品比较', content: '与市场上类似产品/服务的比较。' },
-        { id: uuidv4(), title: '总结评分', content: '最终评分和购买建议。' },
-      ]
-      break
-    default:
-      // Default structure if none selected
-      paragraphs = [
-        { id: uuidv4(), title: '引言', content: `关于"${config.topic}"的引言部分。` },
-        { id: uuidv4(), title: '主要内容一', content: '第一部分主要内容。' },
-        { id: uuidv4(), title: '主要内容二', content: '第二部分主要内容。' },
-        { id: uuidv4(), title: '主要内容三', content: '第三部分主要内容。' },
-        { id: uuidv4(), title: '结论', content: '文章的总结部分。' },
-      ]
-  }
+    主题：${config.topic}
+    结构模板：${config.structureTemplate}
+    风格：${config.style}
+    核心思路：${config.coreIdeas}
+    ${config.exampleArticle ? `参考文章：${config.exampleArticle}` : ''}
 
-  // Apply style to the content if specified
-  if (config.style) {
-    paragraphs = paragraphs.map(p => {
-      let styledContent = p.content
+    请返回一个包含标题和内容的段落列表，格式为JSON数组。每个段落包含title和content字段。
+    `;
 
-      switch (config.style) {
-        case 'formal':
-          styledContent += ' 本段落采用正式学术风格撰写，使用专业术语和严谨的论述方式。'
-          break
-        case 'casual':
-          styledContent += ' 本段落采用轻松随意的风格撰写，语言通俗易懂，富有亲和力。'
-          break
-        case 'persuasive':
-          styledContent += ' 本段落采用说服力强的风格撰写，使用有力的论据和修辞手法。'
-          break
-        case 'descriptive':
-          styledContent += ' 本段落采用描述细致的风格撰写，生动形象地描绘场景和细节。'
-          break
+    // 实际调用 AI 模型
+    try {
+      const generatedContent = await callGenerateAPI(prompt, selectedModel, onProgress);
+      console.log('AI 返回内容:', generatedContent);
+
+      // 尝试解析 JSON 响应
+      // 注意：在实际环境中，可能需要更复杂的处理来确保返回的是有效的 JSON
+      try {
+        const parsedContent = JSON.parse(generatedContent);
+        if (Array.isArray(parsedContent) && parsedContent.length > 0) {
+          return parsedContent.map(p => ({
+            ...p,
+            id: uuidv4(),
+            content: p.content + ` (使用模型: ${selectedModel})`
+          }));
+        }
+      } catch (parseError) {
+        console.error('解析 AI 返回内容失败:', parseError);
+        // 解析失败时继续使用模拟数据
       }
-
-      return { ...p, content: styledContent }
-    })
-  }
-
-  // Incorporate core ideas if provided
-  if (config.coreIdeas) {
-    // Add a note about the core ideas to the introduction
-    if (paragraphs.length > 0) {
-      paragraphs[0].content += ` 核心思路：${config.coreIdeas}`
+    } catch (apiError) {
+      console.error('调用 AI API 失败:', apiError);
+      // API 调用失败时继续使用模拟数据
     }
-  }
 
-  return paragraphs
+    // 如果 API 调用失败或解析失败，使用模拟数据
+    console.log('使用模拟数据');
+
+    // 为了演示，我们继续使用模拟实现
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // 根据结构模板生成段落
+    let paragraphs: ArticleParagraph[] = []
+
+    switch (config.structureTemplate) {
+      case 'essay':
+        paragraphs = [
+          { id: uuidv4(), title: '引言', content: `关于"${config.topic}"的引言部分。这是一篇论述文风格的文章。使用模型: ${selectedModel}` },
+          { id: uuidv4(), title: '背景', content: '这部分提供了相关的背景信息和上下文。' },
+          { id: uuidv4(), title: '论点一', content: '这是第一个主要论点及其支持证据。' },
+          { id: uuidv4(), title: '论点二', content: '这是第二个主要论点及其支持证据。' },
+          { id: uuidv4(), title: '论点三', content: '这是第三个主要论点及其支持证据。' },
+          { id: uuidv4(), title: '反驳', content: '这部分处理可能的反对意见。' },
+          { id: uuidv4(), title: '结论', content: '总结论点并提出最终观点。' },
+        ]
+        break
+      case 'story':
+        paragraphs = [
+          { id: uuidv4(), title: '开场', content: `关于"${config.topic}"的故事开场。这是一个故事型风格的文章。` },
+          { id: uuidv4(), title: '人物介绍', content: '介绍故事中的主要人物。' },
+          { id: uuidv4(), title: '背景设定', content: '描述故事发生的时间、地点和环境。' },
+          { id: uuidv4(), title: '冲突', content: '介绍故事中的主要冲突或问题。' },
+          { id: uuidv4(), title: '发展', content: '故事情节的发展过程。' },
+          { id: uuidv4(), title: '高潮', content: '故事的高潮部分。' },
+          { id: uuidv4(), title: '结局', content: '故事的结局和收尾。' },
+        ]
+        break
+      case 'tutorial':
+        paragraphs = [
+          { id: uuidv4(), title: '介绍', content: `关于"${config.topic}"的教程介绍。这是一篇教程型风格的文章。` },
+          { id: uuidv4(), title: '所需材料/工具', content: '完成本教程所需的材料或工具列表。' },
+          { id: uuidv4(), title: '步骤一', content: '第一个步骤的详细说明。' },
+          { id: uuidv4(), title: '步骤二', content: '第二个步骤的详细说明。' },
+          { id: uuidv4(), title: '步骤三', content: '第三个步骤的详细说明。' },
+          { id: uuidv4(), title: '常见问题', content: '可能遇到的问题及解决方案。' },
+          { id: uuidv4(), title: '总结', content: '教程的总结和最终成果展示。' },
+        ]
+        break
+      case 'review':
+        paragraphs = [
+          { id: uuidv4(), title: '介绍', content: `关于"${config.topic}"的评测介绍。这是一篇评测型风格的文章。` },
+          { id: uuidv4(), title: '产品概述', content: '被评测产品/服务的基本信息。' },
+          { id: uuidv4(), title: '优点', content: '产品/服务的主要优点。' },
+          { id: uuidv4(), title: '缺点', content: '产品/服务的主要缺点。' },
+          { id: uuidv4(), title: '使用体验', content: '使用产品/服务的实际体验。' },
+          { id: uuidv4(), title: '与竞品比较', content: '与市场上类似产品/服务的比较。' },
+          { id: uuidv4(), title: '总结评分', content: '最终评分和购买建议。' },
+        ]
+        break
+      default:
+        // Default structure if none selected
+        paragraphs = [
+          { id: uuidv4(), title: '引言', content: `关于"${config.topic}"的引言部分。` },
+          { id: uuidv4(), title: '主要内容一', content: '第一部分主要内容。' },
+          { id: uuidv4(), title: '主要内容二', content: '第二部分主要内容。' },
+          { id: uuidv4(), title: '主要内容三', content: '第三部分主要内容。' },
+          { id: uuidv4(), title: '结论', content: '文章的总结部分。' },
+        ]
+    }
+
+    // 应用风格（如果指定）
+    if (config.style) {
+      paragraphs = paragraphs.map(p => {
+        let styledContent = p.content
+
+        switch (config.style) {
+          case 'formal':
+            styledContent += ' 本段落采用正式学术风格撰写，使用专业术语和严谨的论述方式。'
+            break
+          case 'casual':
+            styledContent += ' 本段落采用轻松随意的风格撰写，语言通俗易懂，富有亲和力。'
+            break
+          case 'persuasive':
+            styledContent += ' 本段落采用说服力强的风格撰写，使用有力的论据和修辞手法。'
+            break
+          case 'descriptive':
+            styledContent += ' 本段落采用描述细致的风格撰写，生动形象地描绘场景和细节。'
+            break
+        }
+
+        return { ...p, content: styledContent }
+      })
+    }
+
+    // 如果提供了核心思路，则将其纳入
+    if (config.coreIdeas) {
+      // 在引言中添加核心思路的说明
+      if (paragraphs.length > 0) {
+        paragraphs[0].content += ` 核心思路：${config.coreIdeas}`
+      }
+    }
+
+    return paragraphs;
+  } catch (error) {
+    console.error('生成段落时出错:', error);
+    throw error;
+  }
 }
 
 /**
@@ -112,51 +218,117 @@ export async function generateArticleParagraphs(config: ArticleConfig): Promise<
 export async function regenerateParagraph(
   paragraphId: string,
   paragraphs: ArticleParagraph[],
-  config: ArticleConfig
+  config: ArticleConfig,
+  customPrompt?: string,
+  onProgress?: (text: string) => void
 ): Promise<ArticleParagraph> {
-  // In a real application, this would call an API
-  // For now, we'll simulate a delay and return mock data
-  await new Promise(resolve => setTimeout(resolve, 800))
+  // 使用选定的模型进行段落重新生成
+  const selectedModel = config.regenerateModel || 'chat-model-large'
 
-  const paragraph = paragraphs.find(p => p.id === paragraphId)
+  try {
+    const paragraph = paragraphs.find(p => p.id === paragraphId)
 
-  if (!paragraph) {
-    throw new Error('Paragraph not found')
-  }
-
-  // Generate new content based on the paragraph title
-  let newContent = `这是重新生成的"${paragraph.title}"内容。`
-
-  // Add some variation based on the current time
-  newContent += ` (生成于 ${new Date().toLocaleTimeString()})`
-
-  // Apply style if specified
-  if (config.style) {
-    switch (config.style) {
-      case 'formal':
-        newContent += ' 采用正式学术风格撰写。'
-        break
-      case 'casual':
-        newContent += ' 采用轻松随意的风格撰写。'
-        break
-      case 'persuasive':
-        newContent += ' 采用说服力强的风格撰写。'
-        break
-      case 'descriptive':
-        newContent += ' 采用描述细致的风格撰写。'
-        break
+    if (!paragraph) {
+      throw new Error('段落未找到')
     }
-  }
 
-  return {
-    ...paragraph,
-    content: newContent
+    // 构建提示词，如果提供了自定义提示词则使用它
+    const prompt = customPrompt || `
+    请重新生成以下文章段落的内容：
+
+    文章主题：${config.topic}
+    段落标题：${paragraph.title}
+    文章风格：${config.style}
+    核心思路：${config.coreIdeas}
+
+    请提供新的段落内容，保持与原文风格一致。
+    `;
+
+    // 实际调用 AI 模型
+    try {
+      const newContent = await callGenerateAPI(prompt, selectedModel, onProgress);
+      console.log('AI 返回内容:', newContent);
+
+      return {
+        ...paragraph,
+        content: newContent + ` (使用模型: ${selectedModel}, 生成于 ${new Date().toLocaleTimeString()})`
+      };
+    } catch (apiError) {
+      console.error('调用 AI API 失败:', apiError);
+      // API 调用失败时继续使用模拟数据
+    }
+
+    // 如果 API 调用失败，使用模拟数据
+    console.log('使用模拟数据');
+
+    // 为了演示，我们继续使用模拟实现
+    await new Promise(resolve => setTimeout(resolve, 800))
+
+    // 根据段落标题生成新内容
+    let newContent = `这是重新生成的"${paragraph.title}"内容。使用模型: ${selectedModel}`
+
+    // 如果使用了自定义提示词，添加提示
+    if (customPrompt) {
+      newContent += `\n(使用自定义提示词: "${customPrompt.substring(0, 30)}${customPrompt.length > 30 ? '...' : ''}")`
+    }
+
+    // 添加一些基于当前时间的变化
+    newContent += ` (生成于 ${new Date().toLocaleTimeString()})`
+
+    // 应用风格（如果指定）
+    if (config.style) {
+      switch (config.style) {
+        case 'formal':
+          newContent += ' 采用正式学术风格撰写。'
+          break
+        case 'casual':
+          newContent += ' 采用轻松随意的风格撰写。'
+          break
+        case 'persuasive':
+          newContent += ' 采用说服力强的风格撰写。'
+          break
+        case 'descriptive':
+          newContent += ' 采用描述细致的风格撰写。'
+          break
+      }
+    }
+
+    return {
+      ...paragraph,
+      content: newContent
+    }
+  } catch (error) {
+    console.error('重新生成段落时出错:', error);
+    throw error;
   }
 }
 
 /**
  * Generate markdown content from paragraphs
  */
-export function generateMarkdownContent(paragraphs: ArticleParagraph[]): string {
-  return paragraphs.map(p => `## ${p.title}\n\n${p.content}`).join('\n\n')
+export async function generateMarkdownContent(
+  paragraphs: ArticleParagraph[],
+  config?: ArticleConfig,
+  onProgress?: (text: string) => void
+): Promise<string> {
+  // 如果提供了配置，我们可以使用选定的模型进行预览生成
+  const selectedModel = config?.previewModel || 'chat-model-large'
+
+  // 在实际实现中，我们会调用 AI 模型来生成更好的 Markdown 内容
+  const prompt = `
+    请将以下段落转换为格式良好的 Markdown 文章：
+    ${JSON.stringify(paragraphs)}
+  `;
+
+  try {
+    const markdownContent = await callGenerateAPI(prompt, selectedModel, onProgress);
+    console.log('生成的 Markdown 内容:', markdownContent);
+    return markdownContent;
+  } catch (error) {
+    console.error('生成 Markdown 内容时出错:', error);
+    // 失败时使用简单转换
+    const markdownContent = paragraphs.map(p => `## ${p.title}\n\n${p.content}`).join('\n\n')
+    const modelInfo = config ? `\n\n*使用模型: ${selectedModel}*` : ''
+    return markdownContent + modelInfo;
+  }
 }

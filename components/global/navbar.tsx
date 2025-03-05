@@ -5,7 +5,7 @@ import { SiteTitle } from "@/components/global/site-title";
 
 export function Navbar() {
   return (
-    <header className="flex items-center justify-between w-full h-16 gap-4">
+    <header className="flex items-center justify-between w-full h-16 gap-4 px-4 rounded-xl bg-white/30 backdrop-blur-md border border-white/20">
       <div className="flex gap-4">
         <SiteLogo />
         <div aria-hidden className="w-px h-6 bg-[#C7C7C8]" />
