@@ -1,9 +1,9 @@
-import { UserDetails } from "@/components/global/user-details";
+import { WriterDetails } from "@/components/writer/details";
 
 export function Writer() {
   return (
     <div>
-      <UserDetails />
+      <WriterDetails />
     </div>
   );
 }
