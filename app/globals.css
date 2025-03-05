@@ -14,6 +14,44 @@
   }
 }
 
+@keyframes shadow-pulse {
+  0% {
+    box-shadow: 0 0 15px rgba(56, 114, 255, 0.5);
+  }
+  25% {
+    box-shadow: 0 0 15px rgba(129, 56, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.7);
+  }
+  75% {
+    box-shadow: 0 0 15px rgba(255, 120, 56, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(56, 114, 255, 0.5);
+  }
+}
+
+.animate-shadow-pulse {
+  animation: shadow-pulse 4s infinite;
+}
+
+.bg-gradient-text {
+  background: linear-gradient(90deg, #3872ff, #ec4899, #f97316);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.animate-gradient-normal {
+  animation: gradient 8s ease infinite;
+}
+
+.animate-gradient-reverse {
+  animation: gradient 8s ease infinite reverse;
+}
+
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient 8s ease infinite;

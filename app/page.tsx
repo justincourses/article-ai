@@ -38,14 +38,14 @@ export default function Home() {
               <SignedIn>
                 <Link
                   href="/dashboard"
-                  className="px-4 py-2 rounded-full bg-[#131316] text-white text-sm font-semibold"
+                  className="px-8 py-4 rounded-full text-white text-lg font-semibold my-2 bg-gradient-text animate-gradient-normal hover:animate-gradient-reverse transition-all duration-200 shadow-[0_0_15px_rgba(56,114,255,0.5)] hover:shadow-[0_0_20px_rgba(236,72,153,0.7)] animate-shadow-pulse transform hover:scale-105"
                 >
                   开始写作
                 </Link>
               </SignedIn>
               <SignedOut>
                 <SignInButton>
-                  <button className="px-4 py-2 rounded-full bg-[#131316] text-white text-sm font-semibold">
+                  <button className="px-8 py-4 rounded-full text-white text-lg font-semibold my-2 bg-gradient-text animate-gradient-normal hover:animate-gradient-reverse transition-all duration-200 shadow-[0_0_15px_rgba(56,114,255,0.5)] hover:shadow-[0_0_20px_rgba(236,72,153,0.7)] animate-shadow-pulse transform hover:scale-105">
                     立即登录
                   </button>
                 </SignInButton>
