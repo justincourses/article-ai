@@ -5,10 +5,10 @@ import { Metadata } from "next";
 import localFont from "next/font/local";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://clerk-next-app.vercel.app/"),
-  title: "Next.js Clerk Template",
+  metadataBase: new URL("https://article.zhaikr.com/"),
+  title: "Article Writer｜ 智能文章生成器",
   description:
-    "A simple and powerful Next.js template featuring authentication and user management powered by Clerk.",
+    "A professional article rendering platform with advanced formatting and publishing capabilities.",
   openGraph: { images: ["/og.png"] },
 };
 
