@@ -22,6 +22,8 @@ export function ArticleGenerator() {
     setOutline,
     article,
     setArticle,
+    summary,
+    setSummary,
     activeStep,
     setActiveStep,
   } = useWriterConfig()
@@ -86,18 +88,40 @@ export function ArticleGenerator() {
     },
   })
 
+  // 使用 useChat hook 生成摘要
+  const {
+    messages: summaryMessages,
+    append: appendSummary,
+    isLoading: isGeneratingSummary,
+    input: summaryInput,
+    handleInputChange: handleSummaryInputChange,
+    handleSubmit: handleSummarySubmit,
+  } = useChat({
+    api: '/api/summary',
+    id: 'summary-generator',
+    body: {
+      selectedChatModel: 'chat-model-small',
+      article: article
+    },
+    onFinish: (message) => {
+      setSummary(message.content);
+    },
+  })
+
   // 生成文章结构
   const handleGenerateOutline = async () => {
     // 清空原有内容
     await Promise.all([
       setOutline(''),
       setArticle(''),
+      setSummary(''),
       setActiveStep('outline')
     ]);
 
     // 清空消息历史
     outlineMessages.splice(0, outlineMessages.length);
     articleMessages.splice(0, articleMessages.length);
+    summaryMessages.splice(0, summaryMessages.length);
 
     // 发送请求到新的结构生成API
     await appendOutline({
@@ -112,16 +136,37 @@ export function ArticleGenerator() {
     // 清空原有内容
     await Promise.all([
       setArticle(''),
+      setSummary(''),
       setActiveStep('article')
     ]);
 
     // 清空文章消息历史
     articleMessages.splice(0, articleMessages.length);
+    summaryMessages.splice(0, summaryMessages.length);
 
     // 发送请求到新的文章生成API
     await appendArticle({
       role: 'user',
       content: requirements ? `generate article with requirements: ${requirements}` : 'generate article', // 在内容中包含要求
+      id: uuidv4(),
+    });
+  };
+
+  // 生成文章摘要
+  const handleGenerateSummary = async () => {
+    // 清空原有摘要内容
+    await Promise.all([
+      setSummary(''),
+      setActiveStep('summary')
+    ]);
+
+    // 清空摘要消息历史
+    summaryMessages.splice(0, summaryMessages.length);
+
+    // 发送请求到摘要生成API
+    await appendSummary({
+      role: 'user',
+      content: 'generate summary', // 简化的内容，实际提示词在服务器端构建
       id: uuidv4(),
     });
   };
@@ -386,7 +431,7 @@ export function ArticleGenerator() {
           </div>
 
           {/* Generation Buttons */}
-          <div className="mt-6 grid grid-cols-2 gap-4">
+          <div className="mt-6 grid grid-cols-3 gap-4">
             <Button
               onClick={async () => {
                 await handleGenerateOutline();
@@ -423,7 +468,31 @@ export function ArticleGenerator() {
                 </div>
               )}
             </Button>
+
+            {/* Summary Button - Only show when article exists */}
+            {article && (
+              <Button
+                onClick={async () => {
+                  await handleGenerateSummary();
+                  setActiveStep('summary');
+                }}
+                disabled={isGeneratingSummary}
+                className="w-full bg-gradient-to-r from-green-600/85 via-teal-700/85 to-emerald-700/85 hover:from-emerald-700/85 hover:via-teal-700/85 hover:to-green-600/85 animate-gradient transition-all duration-500 text-white"
+              >
+                {isGeneratingSummary ? (
+                  <div className="flex items-center gap-2 justify-center w-full">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>生成中...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 justify-center w-full">
+                    <span>📝 {summary ? '再次生成摘要' : '生成摘要'}</span>
+                  </div>
+                )}
+              </Button>
+            )}
           </div>
+
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent>
@@ -471,9 +540,10 @@ export function ArticleGenerator() {
         <div className="flex-1 p-4">
           <Tabs value={activeStep} onValueChange={(value) => setActiveStep(value as Step)} className="h-full">
             <div className="mb-4">
-              <TabsList className="w-full grid grid-cols-2">
-                <TabsTrigger value="outline" className="flex-1">文章大纲</TabsTrigger>
-                <TabsTrigger value="article" className="flex-1">文章内容</TabsTrigger>
+              <TabsList className="w-full grid grid-cols-3">
+                <TabsTrigger value="outline" className="flex-1">大纲</TabsTrigger>
+                <TabsTrigger value="article" className="flex-1">内容</TabsTrigger>
+                <TabsTrigger value="summary" className="flex-1">摘要</TabsTrigger>
               </TabsList>
             </div>
 
@@ -490,6 +560,14 @@ export function ArticleGenerator() {
                 messages={articleMessages}
                 isLoading={isGeneratingArticle}
                 onChange={setArticle}
+              />
+            </TabsContent>
+
+            <TabsContent value="summary" className="h-[calc(100%-48px)] overflow-auto">
+              <EditableContent
+                messages={summaryMessages}
+                isLoading={isGeneratingSummary}
+                onChange={setSummary}
               />
             </TabsContent>
           </Tabs>

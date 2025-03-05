@@ -38,7 +38,7 @@ export interface ArticleConfig {
   }
 }
 
-export type Step = 'outline' | 'article'
+export type Step = 'outline' | 'article' | 'summary'
 
 // Define the store state and actions
 interface WriterConfigState {
@@ -51,6 +51,7 @@ interface WriterConfigState {
   activeTab: 'config' | 'paragraphs' | 'preview'
   outline: string
   article: string
+  summary: string
   activeStep: Step
 
   // Writer config actions
@@ -78,6 +79,7 @@ interface WriterConfigState {
   resetPreview: () => void
   setOutline: (outline: string) => void
   setArticle: (article: string) => void
+  setSummary: (summary: string) => void
   setActiveStep: (step: Step) => void
 }
 
@@ -124,6 +126,7 @@ export const useWriterConfig = create<WriterConfigState>()(
       activeTab: 'config',
       outline: '',
       article: '',
+      summary: '',
       activeStep: 'outline',
 
       // Writer config actions
@@ -211,6 +214,7 @@ export const useWriterConfig = create<WriterConfigState>()(
           activeTab: 'config',
           outline: '',
           article: '',
+          summary: '',
           activeStep: 'outline'
         }),
 
@@ -228,6 +232,8 @@ export const useWriterConfig = create<WriterConfigState>()(
 
       setArticle: (article) => set({ article }),
 
+      setSummary: (summary) => set({ summary }),
+
       setActiveStep: (step) => set({ activeStep: step }),
     }),
     {
@@ -242,6 +248,7 @@ export const useWriterConfig = create<WriterConfigState>()(
         activeTab: state.activeTab,
         outline: state.outline,
         article: state.article,
+        summary: state.summary,
         activeStep: state.activeStep
       }), // persist all article generation state
     }
