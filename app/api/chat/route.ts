@@ -9,7 +9,7 @@ import { myProvider } from "@/lib/ai/models";
 import { systemPrompt } from "@/lib/ai/prompts";
 import { auth } from "@clerk/nextjs/server";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   const {
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
         system: systemPrompt({ selectedChatModel }),
         messages,
         maxSteps: 5,
+        maxTokens: 16000,
         experimental_activeTools:
           selectedChatModel === "chat-model-function"
             ? [

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { DEFAULT_MODELS } from '@/constants/writer/models';
 
 export async function GET(request: Request) {
   // Test data for structure endpoint
@@ -21,8 +22,7 @@ export async function GET(request: Request) {
         role: 'user',
         content: 'generate outline'
       }
-    ],
-    selectedChatModel: 'chat-model-large'
+    ]
   };
 
   // Test data for article endpoint
@@ -54,8 +54,7 @@ export async function GET(request: Request) {
         role: 'user',
         content: 'generate article with requirements: 增加对AI医疗伦理问题的讨论'
       }
-    ],
-    selectedChatModel: 'chat-model-large'
+    ]
   };
 
   // Test structure endpoint

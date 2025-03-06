@@ -10,7 +10,7 @@ import { systemPrompt, structurePrompts } from "@/constants/prompts";
 import { auth } from "@clerk/nextjs/server";
 import { DEFAULT_MODELS } from "@/constants/writer/models";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   const {
@@ -78,6 +78,7 @@ export async function POST(request: Request) {
         system: systemPrompt({ selectedChatModel: modelToUse }),
         messages: promptMessages,
         maxSteps: 5,
+        maxTokens: 16000,
         experimental_transform: smoothStream({ chunking: "word" }),
         onFinish: async ({ response, reasoning }) => {
           // Handle completion if needed
