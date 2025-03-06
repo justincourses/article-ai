@@ -19,22 +19,23 @@ export default function Home() {
           <div className="px-10 py-16 text-center">
             <div className="w-full max-w-[75rem] mx-auto flex justify-center mb-4">
               <div className="inline-flex items-center gap-2 bg-[#F5F5F5] px-3 py-1.5 rounded-full">
-                <span className="text-blue-600 text-sm font-medium">NEW!</span>
-                <span className="text-sm text-gray-600">Article Writer 智能助手 ✨</span>
+                <span className="text-blue-600 text-sm font-medium">免费!</span>
+                <span className="text-sm text-gray-600">Article AI - 智能文章生成器 ✨</span>
               </div>
             </div>
 
             <h1 className="text-[3.5rem] font-bold tracking-tight mb-6">
-              <span className="bg-gradient-text animate-gradient-normal">Article Writer</span><br />
+              <span className="bg-gradient-text animate-gradient-normal">Article AI</span><br />
               <span className="bg-gradient-text animate-gradient-reverse">智能文章生成器</span>
             </h1>
 
             <p className="text-[#5E5F6E] mx-auto mb-8 max-w-[35rem] text-xl">
-              专业级AI写作工具，只需输入关键词，即可生成高质量、原创性强的专业文章。
-              让您的内容创作更轻松，文章更专业。
+              AI驱动的写作助手，一键生成高质量文章。
+              <br />
+              输入关键词，瞬间获得专业内容，让创作更快捷高效。
             </p>
 
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-3 justify-center my-20">
               <SignedIn>
                 <Link
                   href="/dashboard"

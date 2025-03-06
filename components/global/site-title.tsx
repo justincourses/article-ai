@@ -1,7 +1,7 @@
 export function SiteTitle() {
   return (
     <a href="/" target="_self">
-      Article Writer - AI 文章写作生成工具
+      Article AI - 智能文章生成器
     </a>
   );
 }

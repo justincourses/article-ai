@@ -72,6 +72,7 @@ const prompt = summaryPrompts.getSummaryPrompt({
   format: 'detailed',  // 'simple', 'base', 'detailed'
   style: 'social',  // 'social', 'formal', 'casual'
   includeImagePrompt: true,
+  length: 'medium',  // 'short', 'medium', 'long'
 });
 ```
 
@@ -97,14 +98,28 @@ const prompt = summaryPrompts.getSummaryPrompt({
 - `formatTargetAudience`: 格式化目标受众信息
 - `structureRequirements`: 不同详细程度的结构要求
 - `structureLengthRequirements`: 不同长度的结构要求
+- `structureStyleRequirements`: 不同风格的结构要求（包括正式、轻松、说服性、描述性、技术和故事性风格）
 
 ### 摘要生成组件
 
 - `summaryBasePrompt`: 摘要生成的基础提示词
 - `summaryFormatRequirements`: 不同格式的摘要要求
 - `summaryStyleRequirements`: 不同风格的摘要要求
-- `summaryImagePromptRequirement`: 图像提示词要求
+- `summaryImagePromptRequirements`: 不同长度文章的图像提示词要求
 
 ## 自定义和扩展
 
 可以通过修改各个组件文件来自定义和扩展提示词。例如，添加新的风格、格式或长度要求，或者调整现有提示词的内容。
+
+## 风格与结构的关系
+
+在生成文章结构时，系统会根据指定的风格自动选择合适的结构要求。目前支持以下风格类型：
+
+- `formal`: 正式风格，适合学术、商业或专业场景
+- `casual`: 轻松风格，适合博客、社交媒体等非正式场合
+- `persuasive`: 说服性风格，适合营销、倡导等需要说服读者的内容
+- `descriptive`: 描述性风格，适合旅游、产品介绍等需要生动描述的内容
+- `technical`: 技术风格，适合教程、技术文档等专业内容
+- `storytelling`: 故事性风格，适合案例分析、品牌故事等需要叙事性的内容
+
+系统会根据用户输入的风格描述自动匹配最合适的风格类型，并应用相应的结构要求。

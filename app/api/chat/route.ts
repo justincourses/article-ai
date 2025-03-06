@@ -32,6 +32,7 @@ export async function POST(request: Request) {
         system: systemPrompt({ selectedChatModel }),
         messages,
         maxSteps: 5,
+        maxTokens: 16000,
         experimental_activeTools:
           selectedChatModel === "chat-model-function"
             ? [

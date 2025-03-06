@@ -101,11 +101,35 @@ export const summaryStyleRequirements = {
 7. 可以适当使用emoji表情增加亲和力`,
 };
 
-// Image prompt requirements
-export const summaryImagePromptRequirement = `最后，请额外生成一段用于AI图像生成的提示词（英文），描述一张能够直观表达文章核心内容的图片，格式为：
+// Image prompt requirements based on article length
+export const summaryImagePromptRequirements = {
+  short: `最后，请额外生成一段用于AI图像生成的提示词（英文），描述一张能够直观表达文章核心内容的图片，格式为：
 
 ## 图像提示词
-[英文图像生成提示词，考虑文章类型和风格，描述具体场景、风格、色调等元素]`;
+[英文图像生成提示词，考虑文章类型和风格，描述具体场景、风格、色调等元素]`,
+
+  medium: `最后，请额外生成1-2段用于AI图像生成的提示词（英文），描述能够直观表达文章核心内容的插图，格式为：
+
+## 图像提示词1
+[英文图像生成提示词，考虑文章类型和风格，描述具体场景、风格、色调等元素]
+
+## 图像提示词2（可选）
+[英文图像生成提示词，描述另一个与文章内容相关的场景或概念]`,
+
+  long: `最后，请额外生成2-3段用于AI图像生成的提示词（英文），描述能够直观表达文章不同部分内容的插图，格式为：
+
+## 图像提示词1
+[英文图像生成提示词，考虑文章类型和风格，描述具体场景、风格、色调等元素]
+
+## 图像提示词2
+[英文图像生成提示词，描述另一个与文章内容相关的场景或概念]
+
+## 图像提示词3（可选）
+[英文图像生成提示词，描述第三个与文章内容相关的场景或概念]`
+};
+
+// Legacy image prompt requirement for backward compatibility
+export const summaryImagePromptRequirement = summaryImagePromptRequirements.short;
 
 // Function to combine prompts based on requirements
 export const getSummaryPrompt = ({
@@ -113,16 +137,20 @@ export const getSummaryPrompt = ({
   format = "base",
   style = "social",
   includeImagePrompt = true,
+  length = "short",
 }: {
   article: string;
   format?: "simple" | "base" | "detailed";
   style?: "social" | "formal" | "casual";
   includeImagePrompt?: boolean;
+  length?: "short" | "medium" | "long";
 }) => {
   const basePrompt = summaryBasePrompt.replace("{article}", article);
   const formatReq = summaryFormatRequirements[format] || summaryFormatRequirements.base;
   const styleReq = summaryStyleRequirements[style] || summaryStyleRequirements.social;
-  const imagePrompt = includeImagePrompt ? summaryImagePromptRequirement : "";
+  const imagePrompt = includeImagePrompt
+    ? (summaryImagePromptRequirements[length] || summaryImagePromptRequirements.short)
+    : "";
 
   return `${basePrompt}
 

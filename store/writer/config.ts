@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { DEFAULT_WRITER_CONFIG, DEFAULT_ARTICLE_CONFIG } from '@/constants/writer/models'
 
 // Define the type for writer configuration
 export interface WriterConfig {
@@ -84,34 +85,10 @@ interface WriterConfigState {
 }
 
 // Default configuration
-const defaultConfig: WriterConfig = {
-  fontSize: 16,
-  fontFamily: 'Inter',
-  theme: 'system',
-  lineSpacing: 1.5,
-  autoSave: true,
-  spellCheck: true,
-  wordCount: true,
-  focusMode: false,
-  customShortcuts: {}
-}
+const defaultConfig: WriterConfig = DEFAULT_WRITER_CONFIG
 
 // Default article configuration
-export const defaultArticleConfig: ArticleConfig = {
-  topic: '',
-  style: '',
-  coreIdeas: '',
-  exampleArticle: '',
-  model: 'chat-model-large',
-  wordCount: '',
-  targetAudience: {
-    ageRange: '',
-    gender: '',
-    incomeLevel: '',
-    interests: [],
-    userTraits: ''
-  }
-}
+export const defaultArticleConfig: ArticleConfig = DEFAULT_ARTICLE_CONFIG
 
 // Create the store with persistence
 export const useWriterConfig = create<WriterConfigState>()(
