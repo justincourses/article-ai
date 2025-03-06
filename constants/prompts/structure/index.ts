@@ -9,6 +9,7 @@ export const structureBasePrompt = `根据以下要求生成一篇文章的思�
 风格：{style}
 核心思路：{coreIdeas}
 文章篇幅：{wordCount}
+当前时间参考：{time}
 目标人群：
 {targetAudience}
 {exampleArticle}`;
@@ -113,6 +114,7 @@ export const structureStyleRequirements = {
 
 // Function to combine prompts based on requirements
 export const getStructurePrompt = ({
+  time,
   topic,
   style,
   coreIdeas,
@@ -122,6 +124,7 @@ export const getStructurePrompt = ({
   detailLevel = "base",
   length = "medium",
 }: {
+  time: string;
   topic: string;
   style: string;
   coreIdeas: string;
@@ -136,6 +139,7 @@ export const getStructurePrompt = ({
     .replace("{style}", style)
     .replace("{coreIdeas}", coreIdeas)
     .replace("{wordCount}", wordCount)
+    .replace("{time}", time)
     .replace("{targetAudience}", formatTargetAudience(targetAudience))
     .replace(
       "{exampleArticle}",
@@ -174,6 +178,7 @@ ${styleReq}
 2. 根据"${wordCount}"的篇幅要求合理分配各部分内容
 3. 考虑目标人群的特征，确保结构和内容符合其阅读偏好
 4. 核心思路"${coreIdeas}"应贯穿整个结构设计
+5. 涉及时间相关内容时，参考提供的时间信息"${time}"
 
 直接返回 Markdown 格式的内容，不要使用代码块。`;
 };

@@ -14,9 +14,10 @@ import { auth } from "@clerk/nextjs/server";
 export async function POST(request: Request) {
   const {
     id,
+    time,
     messages,
     selectedChatModel,
-  }: { id: string; messages: Array<Message>; selectedChatModel: string } =
+  }: { id: string; time: string; messages: Array<Message>; selectedChatModel: string } =
     await request.json();
 
   const { userId } = await auth();

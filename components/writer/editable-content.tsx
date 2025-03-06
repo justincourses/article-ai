@@ -85,7 +85,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
     if (!message) return { content: '', reasoning: '' }
 
     // 详细调试信息
-    console.log('Processing message:', message)
+    // console.log('Processing message:', message)
 
     // 专门检查 message.reasoning
     if (message.reasoning) {
@@ -139,22 +139,22 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
       // 1. 检查 message.reasoning
       if (message.reasoning) {
         reasoningText = message.reasoning
-        console.log('Found reasoning from message.reasoning:', reasoningText.substring(0, 100) + '...')
+        // console.log('Found reasoning from message.reasoning:', reasoningText.substring(0, 100) + '...')
       }
 
       // 2. 检查 message.parts
       if (message.parts && Array.isArray(message.parts)) {
-        console.log('Found message parts:', message.parts.length)
+        // console.log('Found message parts:', message.parts.length)
 
         // 详细记录parts数组结构
         message.parts.forEach((part, index) => {
-          console.log(`Examining part[${index}]:`, part)
-          console.log(`  - Type:`, part.type)
-          console.log(`  - Keys:`, Object.keys(part))
+          // console.log(`Examining part[${index}]:`, part)
+          // console.log(`  - Type:`, part.type)
+          // console.log(`  - Keys:`, Object.keys(part))
 
           if (part.type === 'reasoning') {
-            console.log(`  - Is 'reasoning' in part?`, 'reasoning' in part)
-            console.log(`  - part.reasoning:`, part.reasoning)
+            // console.log(`  - Is 'reasoning' in part?`, 'reasoning' in part)
+            // console.log(`  - part.reasoning:`, part.reasoning)
           }
         })
 
@@ -165,27 +165,27 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
             if (part.type === 'reasoning' && 'reasoning' in part) {
               // 推理内容
               reasoningText += part.reasoning
-              console.log(
-                "Added reasoning from parts（reasoningText += part.reasoning）",
-                reasoningText
-              );
+              // console.log(
+              //   "Added reasoning from parts（reasoningText += part.reasoning）",
+              //   reasoningText
+              // );
             } else if (part.type === 'text' && 'text' in part) {
               // 文本内容
               contentText += part.text
-              console.log('Added text from parts')
+              // console.log('Added text from parts')
             } else {
               // 尝试遍历对象的所有属性，查找可能的内容
-              console.log('Examining part properties:', part)
+              // console.log('Examining part properties:', part)
               for (const [key, value] of Object.entries(part)) {
                 if (typeof value === 'string' && key !== 'type' && key !== 'id') {
-                  console.log(`Found content in key "${key}":`, value.substring(0, 50) + '...')
+                  // console.log(`Found content in key "${key}":`, value.substring(0, 50) + '...')
                   // 根据key决定放在哪里
                   if (key.includes('reason')) {
                     reasoningText += value
-                    console.log('Added reasoning from key', key)
+                    // console.log('Added reasoning from key', key)
                   } else {
                     contentText += value
-                    console.log('Added content from key', key)
+                    // console.log('Added content from key', key)
                   }
                 }
               }

@@ -34,6 +34,7 @@ export function useArticleService() {
     api: API_ENDPOINTS.STRUCTURE,
     id: CHAT_IDS.OUTLINE_GENERATOR,
     body: {
+      time: new Date().toISOString(),
       topic: articleConfig.topic,
       style: articleConfig.style,
       coreIdeas: articleConfig.coreIdeas,
@@ -57,6 +58,7 @@ export function useArticleService() {
     api: API_ENDPOINTS.ARTICLE,
     id: CHAT_IDS.ARTICLE_GENERATOR,
     body: {
+      time: new Date().toISOString(),
       topic: articleConfig.topic,
       style: articleConfig.style,
       coreIdeas: articleConfig.coreIdeas,
@@ -78,6 +80,7 @@ export function useArticleService() {
     api: API_ENDPOINTS.SUMMARY,
     id: CHAT_IDS.SUMMARY_GENERATOR,
     body: {
+      time: new Date().toISOString(),
       article: article
     },
     onFinish: (message) => {
