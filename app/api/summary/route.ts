@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     format = "base",
     style = "social",
     includeImagePrompt = true,
+    length = "short",
   } = await request.json();
 
   const { userId } = await auth();
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
     format,
     style,
     includeImagePrompt,
+    length,
   });
 
   // Create a message with the prompt
