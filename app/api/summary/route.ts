@@ -9,9 +9,8 @@ import { myProvider } from "@/lib/ai/models";
 import { systemPrompt, summaryPrompts } from "@/constants/prompts";
 import { auth } from "@clerk/nextjs/server";
 import { DEFAULT_MODELS } from "@/constants/writer/models";
-import { API_CONFIG } from "@/constants/writer";
 
-export const maxDuration = API_CONFIG.MAX_DURATION;
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   const {
