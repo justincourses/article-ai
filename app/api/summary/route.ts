@@ -8,6 +8,7 @@ import {
 import { myProvider } from "@/lib/ai/models";
 import { systemPrompt, summaryPrompts } from "@/constants/prompts";
 import { auth } from "@clerk/nextjs/server";
+import { DEFAULT_MODELS } from "@/constants/writer/models";
 
 export const maxDuration = 60;
 
@@ -16,7 +17,6 @@ export async function POST(request: Request) {
     id,
     article,
     messages,
-    selectedChatModel,
     format = "base",
     style = "social",
     includeImagePrompt = true,
@@ -47,11 +47,14 @@ export async function POST(request: Request) {
     },
   ];
 
+  // Use the summary model from constants
+  const modelToUse = DEFAULT_MODELS.SUMMARY;
+
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
-        model: myProvider.languageModel(selectedChatModel || 'chat-model-large'),
-        system: systemPrompt({ selectedChatModel: selectedChatModel || 'chat-model-large' }),
+        model: myProvider.languageModel(modelToUse),
+        system: systemPrompt({ selectedChatModel: modelToUse }),
         messages: promptMessages,
         maxSteps: 3,
         experimental_transform: smoothStream({ chunking: "word" }),

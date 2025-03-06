@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useWriterConfig } from '@/store/writer/config'
-import { STYLE_OPTIONS, WORD_COUNT_OPTIONS, MODEL_OPTIONS } from '@/constants/writer'
+import { STYLE_OPTIONS, WORD_COUNT_OPTIONS } from '@/constants/writer'
 
 export function BasicConfigTab() {
   const { articleConfig, setArticleConfig } = useWriterConfig()
@@ -74,25 +74,6 @@ export function BasicConfigTab() {
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setArticleConfig({ ...articleConfig, coreIdeas: e.target.value })}
           className="min-h-[100px]"
         />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="model">
-          生成模型 <span className="text-red-500">*</span>
-        </Label>
-        <Select
-          value={articleConfig.model}
-          onValueChange={(value: string) => setArticleConfig({ ...articleConfig, model: value })}
-        >
-          <SelectTrigger id="model">
-            <SelectValue placeholder="选择生成模型" />
-          </SelectTrigger>
-          <SelectContent>
-            {MODEL_OPTIONS.map(option => (
-              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
     </div>
   )

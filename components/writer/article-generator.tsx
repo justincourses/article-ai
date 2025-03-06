@@ -10,14 +10,14 @@ export function ArticleGenerator() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex h-[calc(100vh-200px)]">
-        <div className="w-1/3 pr-4">
+        <div className="w-5/12 pr-4 overflow-y-auto">
           <ConfigPanel />
-          <div className="mt-6">
+          <div className="mt-6 mb-4">
             <ActionButtons />
           </div>
         </div>
 
-        <div className="w-2/3 border-l pl-4 flex flex-col">
+        <div className="w-7/12 border-l pl-4 flex flex-col">
           <ContentTabs />
         </div>
       </div>

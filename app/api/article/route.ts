@@ -8,6 +8,7 @@ import {
 import { myProvider } from "@/lib/ai/models";
 import { systemPrompt, articlePrompts } from "@/constants/prompts";
 import { auth } from "@clerk/nextjs/server";
+import { DEFAULT_MODELS } from "@/constants/writer/models";
 
 export const maxDuration = 60;
 
@@ -20,7 +21,6 @@ export async function POST(request: Request) {
     outline,
     requirements,
     messages,
-    selectedChatModel,
     length = "medium",
     styleType = "casual",
   } = await request.json();
@@ -63,11 +63,14 @@ export async function POST(request: Request) {
     },
   ];
 
+  // Use the article model from constants
+  const modelToUse = DEFAULT_MODELS.ARTICLE;
+
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
-        model: myProvider.languageModel(selectedChatModel || 'chat-model-reasoning'),
-        system: systemPrompt({ selectedChatModel: selectedChatModel || 'chat-model-reasoning' }),
+        model: myProvider.languageModel(modelToUse),
+        system: systemPrompt({ selectedChatModel: modelToUse }),
         messages: promptMessages,
         maxSteps: 5,
         experimental_transform: smoothStream({ chunking: "word" }),

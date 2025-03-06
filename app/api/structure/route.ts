@@ -8,6 +8,7 @@ import {
 import { myProvider } from "@/lib/ai/models";
 import { systemPrompt, structurePrompts } from "@/constants/prompts";
 import { auth } from "@clerk/nextjs/server";
+import { DEFAULT_MODELS } from "@/constants/writer/models";
 
 export const maxDuration = 60;
 
@@ -21,7 +22,6 @@ export async function POST(request: Request) {
     targetAudience,
     exampleArticle,
     messages,
-    selectedChatModel,
     detailLevel = "base",
     length,
   } = await request.json();
@@ -68,11 +68,14 @@ export async function POST(request: Request) {
     },
   ];
 
+  // Use the outline model from constants
+  const modelToUse = DEFAULT_MODELS.OUTLINE;
+
   return createDataStreamResponse({
     execute: (dataStream) => {
       const result = streamText({
-        model: myProvider.languageModel(selectedChatModel || 'chat-model-large'),
-        system: systemPrompt({ selectedChatModel: selectedChatModel || 'chat-model-large' }),
+        model: myProvider.languageModel(modelToUse),
+        system: systemPrompt({ selectedChatModel: modelToUse }),
         messages: promptMessages,
         maxSteps: 5,
         experimental_transform: smoothStream({ chunking: "word" }),

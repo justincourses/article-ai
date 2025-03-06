@@ -6,6 +6,7 @@ import { useWriterConfig } from '@/store/writer/config'
 import { useContentStore } from '@/store/writer/content-store'
 import { useUIStore } from '@/store/writer/ui-store'
 import { API_ENDPOINTS, CHAT_IDS } from '@/constants/writer'
+import { DEFAULT_MODELS } from '@/constants/writer/models'
 
 export function useArticleService() {
   const { articleConfig } = useWriterConfig()
@@ -33,7 +34,6 @@ export function useArticleService() {
     api: API_ENDPOINTS.STRUCTURE,
     id: CHAT_IDS.OUTLINE_GENERATOR,
     body: {
-      selectedChatModel: articleConfig.model || 'chat-model-large',
       topic: articleConfig.topic,
       style: articleConfig.style,
       coreIdeas: articleConfig.coreIdeas,
@@ -57,7 +57,6 @@ export function useArticleService() {
     api: API_ENDPOINTS.ARTICLE,
     id: CHAT_IDS.ARTICLE_GENERATOR,
     body: {
-      selectedChatModel: articleConfig.model || 'chat-model-reasoning',
       topic: articleConfig.topic,
       style: articleConfig.style,
       coreIdeas: articleConfig.coreIdeas,
@@ -79,7 +78,6 @@ export function useArticleService() {
     api: API_ENDPOINTS.SUMMARY,
     id: CHAT_IDS.SUMMARY_GENERATOR,
     body: {
-      selectedChatModel: 'chat-model-large',
       article: article
     },
     onFinish: (message) => {
