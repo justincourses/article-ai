@@ -5,6 +5,8 @@
 // Base prompt for summary generation
 export const summaryBasePrompt = `请为以下文章生成一个适合在社交媒体（如微信公众号、小红书等）发布的完整摘要：
 
+当前时间参考：{time}
+
 {article}`;
 
 // Format requirements for summaries
@@ -133,19 +135,21 @@ export const summaryImagePromptRequirement = summaryImagePromptRequirements.shor
 
 // Function to combine prompts based on requirements
 export const getSummaryPrompt = ({
+  time,
   article,
   format = "base",
   style = "social",
   includeImagePrompt = true,
   length = "short",
 }: {
+  time: string;
   article: string;
   format?: "simple" | "base" | "detailed";
   style?: "social" | "formal" | "casual";
   includeImagePrompt?: boolean;
   length?: "short" | "medium" | "long";
 }) => {
-  const basePrompt = summaryBasePrompt.replace("{article}", article);
+  const basePrompt = summaryBasePrompt.replace("{time}", time).replace("{article}", article);
   const formatReq = summaryFormatRequirements[format] || summaryFormatRequirements.base;
   const styleReq = summaryStyleRequirements[style] || summaryStyleRequirements.social;
   const imagePrompt = includeImagePrompt
@@ -159,6 +163,8 @@ ${formatReq}
 ${styleReq}
 
 ${imagePrompt}
+
+在生成摘要时，如果涉及时间相关内容，请参考提供的时间信息"${time}"。
 
 直接返回 Markdown 格式的完整内容，不要使用代码块。`;
 };

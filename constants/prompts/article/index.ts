@@ -8,6 +8,7 @@ export const articleBasePrompt = `根据以下要求生成一篇完整的文章�
 # 文章基本信息
 主题：{topic}
 核心思路：{coreIdeas}
+当前时间参考：{time}
 {requirements}
 
 # 文章风格与表达
@@ -83,6 +84,7 @@ export const articleLengthRequirements = {
 
 // Function to combine prompts based on requirements
 export const getArticlePrompt = ({
+  time,
   topic,
   style,
   coreIdeas,
@@ -91,6 +93,7 @@ export const getArticlePrompt = ({
   length = "medium",
   styleType = "casual",
 }: {
+  time: string;
   topic: string;
   style: string;
   coreIdeas: string;
@@ -104,6 +107,7 @@ export const getArticlePrompt = ({
     .replace("{style}", style)
     .replace("{coreIdeas}", coreIdeas)
     .replace("{outline}", outline)
+    .replace("{time}", time)
     .replace(
       "{requirements}",
       requirements ? `补充要求：${requirements}` : ""
@@ -140,6 +144,7 @@ ${styleType === "formal" ?
 6. 是否使用了正确的 Markdown 格式
 7. 是否满足了所有补充要求
 8. ${styleType !== "formal" ? "文章是否避免了过于学术化或文档式的结构" : "文章是否保持了应有的学术严谨性"}
+9. 涉及时间相关内容时，是否参考了提供的时间信息
 
 如果有任何未满足的要求，请调整文章内容，直到所有要求都得到满足。
 

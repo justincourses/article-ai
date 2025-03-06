@@ -15,6 +15,7 @@ import { DEFAULT_MODELS } from "@/constants/writer/models";
 export async function POST(request: Request) {
   const {
     id,
+    time,
     topic,
     style,
     coreIdeas,
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
 
   // Generate the prompt using the prompt utility
   const prompt = articlePrompts.getArticlePrompt({
+    time,
     topic,
     style,
     coreIdeas,

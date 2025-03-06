@@ -15,6 +15,7 @@ import { DEFAULT_MODELS } from "@/constants/writer/models";
 export async function POST(request: Request) {
   const {
     id,
+    time,
     article,
     messages,
     format = "base",
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
 
   // Generate the prompt using the prompt utility
   const prompt = summaryPrompts.getSummaryPrompt({
+    time,
     article,
     format,
     style,
