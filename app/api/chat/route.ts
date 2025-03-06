@@ -8,8 +8,9 @@ import {
 import { myProvider } from "@/lib/ai/models";
 import { systemPrompt } from "@/lib/ai/prompts";
 import { auth } from "@clerk/nextjs/server";
+import { API_CONFIG } from "@/constants/writer";
 
-export const maxDuration = 300;
+export const maxDuration = API_CONFIG.MAX_DURATION;
 
 export async function POST(request: Request) {
   const {

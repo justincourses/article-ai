@@ -66,3 +66,8 @@ export const CHAT_IDS = {
   ARTICLE_GENERATOR: 'article-generator',
   SUMMARY_GENERATOR: 'summary-generator',
 };
+
+// API configuration
+export const API_CONFIG = {
+  MAX_DURATION: 60, // Maximum duration for API routes in seconds
+};
