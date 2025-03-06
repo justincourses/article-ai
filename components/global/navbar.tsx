@@ -56,7 +56,7 @@ export function Navbar() {
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
               <Link
-                href="https://interjc.net/contact"
+                href="https://interjc.net/about"
                 target="_blank"
                 className={navigationMenuTriggerStyle()}
               >
