@@ -65,8 +65,17 @@ export const articleRequirements = {
 
 // Length-specific requirements for articles
 export const articleLengthRequirements = {
+  mini: `文章篇幅要求：
+1. 总字数控制在300字以内
+2. 内容要极度精简，直击核心
+3. 只保留最关键的观点和信息
+4. 适当使用emoji表情增加亲和力
+5. 段落简短，像社交媒体发帖或聊天的风格
+6. 可以使用短句、感叹号等增强互动感
+7. 适合在小红书、微博等社交平台发布`,
+
   short: `文章篇幅要求：
-1. 总字数控制在500-800字之间
+1. 总字数控制在300-800字之间
 2. 各部分内容要简洁明了
 3. 重点突出核心观点，避免冗余内容`,
 
@@ -90,7 +99,7 @@ export const getArticlePrompt = ({
   coreIdeas,
   outline,
   requirements,
-  length = "medium",
+  length = "mini",
   styleType = "casual",
 }: {
   time: string;
@@ -99,7 +108,7 @@ export const getArticlePrompt = ({
   coreIdeas: string;
   outline: string;
   requirements?: string;
-  length?: "short" | "medium" | "long";
+  length?: "mini" | "short" | "medium" | "long";
   styleType?: "formal" | "casual" | "creative" | "technical";
 }) => {
   const basePrompt = articleBasePrompt

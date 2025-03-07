@@ -105,6 +105,11 @@ export const summaryStyleRequirements = {
 
 // Image prompt requirements based on article length
 export const summaryImagePromptRequirements = {
+  mini: `最后，请额外生成一段简短的用于AI图像生成的提示词（英文），描述一张能够直观表达文章核心内容的图片，格式为：
+
+## 图像提示词
+[英文图像生成提示词，简洁描述核心场景和风格]`,
+
   short: `最后，请额外生成一段用于AI图像生成的提示词（英文），描述一张能够直观表达文章核心内容的图片，格式为：
 
 ## 图像提示词
@@ -130,6 +135,12 @@ export const summaryImagePromptRequirements = {
 [英文图像生成提示词，描述第三个与文章内容相关的场景或概念]`
 };
 
+// Unsplash search keyword requirement
+export const unsplashSearchKeywordRequirement = `此外，请生成一个简短的英文关键词（1-3个单词），用于在Unsplash图库中搜索与文章内容相关的图片，格式为：
+
+## Unsplash搜索关键词
+[简短的英文关键词，适合在Unsplash图库搜索，例如：nature, business meeting, technology等]`;
+
 // Legacy image prompt requirement for backward compatibility
 export const summaryImagePromptRequirement = summaryImagePromptRequirements.short;
 
@@ -140,14 +151,14 @@ export const getSummaryPrompt = ({
   format = "base",
   style = "social",
   includeImagePrompt = true,
-  length = "short",
+  length = "mini",
 }: {
   time: string;
   article: string;
   format?: "simple" | "base" | "detailed";
   style?: "social" | "formal" | "casual";
   includeImagePrompt?: boolean;
-  length?: "short" | "medium" | "long";
+  length?: "mini" | "short" | "medium" | "long";
 }) => {
   const basePrompt = summaryBasePrompt.replace("{time}", time).replace("{article}", article);
   const formatReq = summaryFormatRequirements[format] || summaryFormatRequirements.base;
@@ -163,6 +174,8 @@ ${formatReq}
 ${styleReq}
 
 ${imagePrompt}
+
+${unsplashSearchKeywordRequirement}
 
 在生成摘要时，如果涉及时间相关内容，请参考提供的时间信息"${time}"。
 

@@ -62,7 +62,8 @@ export function useArticleService() {
       topic: articleConfig.topic,
       style: articleConfig.style,
       coreIdeas: articleConfig.coreIdeas,
-      outline: outline
+      outline: outline,
+      wordCount: articleConfig.wordCount
     },
     onFinish: (message) => {
       setArticle(message.content);

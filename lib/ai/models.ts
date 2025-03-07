@@ -66,9 +66,9 @@ export const chatModels: Array<ChatModel> = [
   },
   // Using function calling model
   // URL: https://console.volcengine.com/ark/region:ark+cn-beijing/model/detail?Id=doubao-pro-32k
-  // {
-  //   id: "chat-model-function",
-  //   name: "Function calling model",
-  //   description: `Model: ${OPENAI_COMPLETIONS_MODEL_FUNCTION}`,
-  // },
+  {
+    id: "chat-model-function",
+    name: "Function calling model",
+    description: `Model: ${OPENAI_COMPLETIONS_MODEL_FUNCTION}`,
+  },
 ];

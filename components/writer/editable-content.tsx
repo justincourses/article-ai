@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Message } from 'ai'
@@ -8,6 +8,7 @@ import { marked } from 'marked'
 import { throttle } from 'lodash'
 import { useContentStore } from '@/store/writer/content-store'
 import { CONTENT_TABS } from '@/constants/writer'
+import { SummaryImage } from './SummaryImage'
 
 interface ReasoningDisplayProps {
   content: string
@@ -17,26 +18,14 @@ interface ReasoningDisplayProps {
 // 推理内容显示组件
 const ReasoningDisplay = ({ content, isVisible }: ReasoningDisplayProps) => {
   const [isExpanded, setIsExpanded] = useState(true)
-  const [renderedContent, setRenderedContent] = useState('')
 
   // 使用 useMemo 缓存解析后的 HTML，避免不必要的重新渲染
-  const parsedHtml = useMemo(() => {
+  const renderedContent = useMemo(() => {
     if (!content) return ''
     return marked.parse(content, { breaks: true }) as string
   }, [content])
 
-  // 只在 parsedHtml 变化时更新 renderedContent
-  useEffect(() => {
-    setRenderedContent(parsedHtml)
-  }, [parsedHtml])
-
-  // 添加调试日志
-  useEffect(() => {
-    console.log('ReasoningDisplay props:', { contentLength: content?.length, isVisible })
-  }, [content, isVisible])
-
   if (!isVisible || !content) {
-    console.log('ReasoningDisplay hidden because:', !isVisible ? 'not visible' : 'no content')
     return null
   }
 
@@ -76,9 +65,10 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
   const [isEditing, setIsEditing] = useState(false)
   const [renderedContent, setRenderedContent] = useState('')
   const [isCopied, setIsCopied] = useState(false)
-  const [showReasoning, setShowReasoning] = useState(true)
+  const [showReasoning, setShowReasoning] = useState(false)
   const { activeContentTab } = useContentStore()
   const [wordCount, setWordCount] = useState(0)
+  const reasoningSetRef = useRef(false)
 
   // 处理消息内容，分离推理和正文
   const processMessageContent = (message: Message | undefined) => {
@@ -233,11 +223,14 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
 
   // 调试推理内容
   useEffect(() => {
-    if (hasReasoning) {
+    if (hasReasoning && !reasoningSetRef.current) {
       console.log('Reasoning content available:', reasoning.substring(0, 100) + '...')
       setShowReasoning(true)
-    } else {
+      reasoningSetRef.current = true
+    } else if (!hasReasoning) {
       console.log('No reasoning content available')
+      // 如果没有推理内容，重置标志，以便下次有推理内容时可以再次显示
+      reasoningSetRef.current = false
     }
   }, [reasoning, hasReasoning])
 
@@ -300,6 +293,13 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
       setWordCount(0);
     }
   }, [content]);
+
+  // 当切换内容标签时，重置推理内容的显示状态
+  useEffect(() => {
+    // 重置推理内容的显示状态
+    setShowReasoning(false)
+    reasoningSetRef.current = false
+  }, [activeContentTab])
 
   if (isLoading && messages.length === 0) {
     return (
@@ -371,6 +371,16 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
                                   })(),
                           }}
                         />
+
+                        {/* Add SummaryImage component for the last message in summary tab */}
+                        {index === messages.length - 1 &&
+                         activeContentTab === CONTENT_TABS.SUMMARY &&
+                         content && (
+                          <SummaryImage
+                            summaryText={content}
+                            isApiComplete={!isLoading && index === messages.length - 1}
+                          />
+                        )}
                       </div>
                     )
                 )}
@@ -414,7 +424,10 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
               size="sm"
               className="flex items-center gap-1"
               disabled={!hasReasoning || isEditing}
-              onClick={() => setShowReasoning(!showReasoning)}
+              onClick={() => {
+                setShowReasoning(!showReasoning);
+                // 当手动切换时，不要重置 reasoningSetRef，这样 useEffect 就不会再次触发
+              }}
             >
               <span>🧠</span>
               <span>思考过程</span>

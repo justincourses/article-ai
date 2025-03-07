@@ -59,10 +59,10 @@ export async function POST(request: Request) {
         system: systemPrompt({ selectedChatModel: modelToUse }),
         messages: promptMessages,
         maxSteps: 3,
-        maxTokens: 16000,
+        // maxTokens: 16000,
         experimental_transform: smoothStream({ chunking: "word" }),
-        onFinish: async ({ response, reasoning }) => {
-          // Handle completion if needed
+        onFinish: async () => {
+          // The client will extract the image prompt and call the image API separately
         },
         experimental_telemetry: {
           isEnabled: true,

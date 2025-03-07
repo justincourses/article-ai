@@ -59,6 +59,12 @@ export const structureRequirements = {
 
 // Length-specific structure requirements
 export const structureLengthRequirements = {
+  mini: `迷你结构要求：
+1. 总体结构极简，只包含2-4个主要部分
+2. 只使用一级列表，不要使用多层嵌套结构
+3. 适合300字以内的超短文章
+4. 每个部分的描述要极度精简`,
+
   short: `短篇结构要求：
 1. 总体结构简洁，包含3-5个主要部分
 2. 适合300-800字的文章长度`,
@@ -132,7 +138,7 @@ export const getStructurePrompt = ({
   targetAudience?: any;
   exampleArticle?: string;
   detailLevel?: "simple" | "base" | "detailed";
-  length?: "short" | "medium" | "long";
+  length?: "mini" | "short" | "medium" | "long";
 }) => {
   const basePrompt = structureBasePrompt
     .replace("{topic}", topic)
