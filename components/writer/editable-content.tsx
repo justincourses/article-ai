@@ -297,13 +297,6 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
     }
   }, [content]);
 
-  // 当切换内容标签时，重置推理内容的显示状态
-  useEffect(() => {
-    // 重置推理内容的显示状态
-    setShowReasoning(false)
-    reasoningSetRef.current = false
-  }, [activeContentTab])
-
   if (isLoading && messages.length === 0) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-16rem)] min-h-[564px]">

@@ -7,6 +7,7 @@ import { useUIStore } from '@/store/writer/ui-store'
 import { useArticleService } from './services/article-service'
 import { CONTENT_TABS } from '@/constants/writer'
 import { useWriterConfig } from '@/store/writer/config'
+import { Eraser } from 'lucide-react'
 
 export function ActionButtons() {
   const {
@@ -28,56 +29,74 @@ export function ActionButtons() {
     isGeneratingSummary
   } = useArticleService()
 
-  // 检查表单是否有效
-  const isFormValid = articleConfig.topic &&
-    articleConfig.style &&
-    articleConfig.coreIdeas &&
-    articleConfig.wordCount;
-
-  const handleArticleGeneration = () => {
-    if (outline) {
-      setIsDialogOpen(true)
-    }
-  }
-
-  const handleSummaryGeneration = () => {
-    if (article) {
-      handleGenerateSummary()
-      setActiveContentTab(CONTENT_TABS.SUMMARY)
+  const handleReset = () => {
+    if (window.confirm('确定要重置所有配置吗？这将清除所有已保存的设置。')) {
+      if (typeof window !== 'undefined') {
+        localStorage.clear()
+        window.location.reload()
+      }
     }
   }
 
   const handleOutlineGeneration = () => {
-    if (isFormValid) {
-      handleGenerateOutline()
-      setActiveContentTab(CONTENT_TABS.OUTLINE)
+    if (!articleConfig.topic || !articleConfig.style || !articleConfig.wordCount || !articleConfig.coreIdeas) {
+      setIsDialogOpen(true)
+      return
     }
+    handleGenerateOutline()
+    setActiveContentTab(CONTENT_TABS.OUTLINE)
+  }
+
+  const handleArticleGeneration = () => {
+    if (!outline) {
+      handleOutlineGeneration()
+      return
+    }
+    handleGenerateArticle()
+    setActiveContentTab(CONTENT_TABS.ARTICLE)
+  }
+
+  const handleSummaryGeneration = () => {
+    if (!article) {
+      handleArticleGeneration()
+      return
+    }
+    handleGenerateSummary()
+    setActiveContentTab(CONTENT_TABS.SUMMARY)
   }
 
   return (
-    <div className="flex flex-col-3 space-x-3">
+    <div className="flex flex-col gap-2 md:flex-row md:gap-4">
       <Button
         onClick={handleOutlineGeneration}
-        disabled={!isFormValid || isGeneratingOutline}
-        className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white shadow-md"
+        disabled={isGeneratingOutline}
+        className="w-auto px-4 bg-blue-500 hover:bg-blue-400 transition-colors text-white rounded-md"
       >
-        ✨ {isGeneratingOutline ? '生成大纲中...' : '生成大纲'}
+        {isGeneratingOutline ? '✨ 生成大纲中...' : '✨ 生成大纲'}
       </Button>
-
       <Button
         onClick={handleArticleGeneration}
-        disabled={!outline || isGeneratingArticle}
-        className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-700 hover:from-purple-700 hover:to-fuchsia-800 text-white shadow-md"
+        disabled={isGeneratingArticle}
+        className="w-auto px-4 bg-purple-500 hover:bg-purple-400 transition-colors text-white rounded-md"
       >
-        🔮 {isGeneratingArticle ? '生成文章中...' : '生成文章'}
+        {isGeneratingArticle ? '🔮 生成文章中...' : '🔮 生成文章'}
+      </Button>
+      <Button
+        onClick={handleSummaryGeneration}
+        disabled={isGeneratingSummary}
+        className="w-auto px-4 bg-teal-600 hover:bg-teal-500 transition-colors text-white rounded-md"
+      >
+        {isGeneratingSummary ? '⚡ 生成摘要中...' : '⚡ 生成摘要'}
       </Button>
 
       <Button
-        onClick={handleSummaryGeneration}
-        disabled={!article || isGeneratingSummary}
-        className="w-full bg-gradient-to-r from-teal-600 to-emerald-700 hover:from-teal-700 hover:to-emerald-800 text-white shadow-md"
+        variant="ghost"
+        size="icon"
+        onClick={handleReset}
+        className="ml-auto"
+        title="重置所有配置"
       >
-        ⚡ {isGeneratingSummary ? '生成摘要中...' : '生成摘要'}
+        <Eraser className="h-5 w-5 text-gray-500 hover:text-red-500" />
       </Button>
     </div>
   )

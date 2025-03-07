@@ -3,6 +3,7 @@
 // Tab values
 export const TABS = {
   BASIC: 'basic',
+  AUDIENCE: 'audience',
   ADVANCED: 'advanced',
 } as const;
 

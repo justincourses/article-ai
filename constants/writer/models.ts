@@ -21,6 +21,16 @@ export const DEFAULT_ARTICLE_CONFIG = {
     incomeLevel: '',
     interests: [],
     userTraits: ''
+  },
+  writerPersona: {
+    type: '',
+    style: '',
+    characteristics: ''
+  },
+  reviewerInfo: {
+    hasReviewer: false,
+    reviewerType: '',
+    reviewerRequirements: ''
   }
 };
 
