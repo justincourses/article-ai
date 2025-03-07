@@ -8,7 +8,27 @@ export const metadata: Metadata = {
   title: "Article Writer｜ 智能文章生成器",
   description:
     "A professional article rendering platform with advanced formatting and publishing capabilities.",
-  openGraph: { images: ["/og.png"] },
+  openGraph: {
+    type: "website",
+    url: "https://article.zhaikr.com/",
+    title: "Article Writer｜ 智能文章生成器",
+    description: "A professional article rendering platform with advanced formatting and publishing capabilities.",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Article Writer｜ 智能文章生成器",
+      }
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Article Writer｜ 智能文章生成器",
+    description: "A professional article rendering platform with advanced formatting and publishing capabilities.",
+    images: ["/og.png"],
+    creator: "@zhaikr",
+  },
 };
 
 export default function RootLayout({
