@@ -5,26 +5,26 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://article.zhaikr.com/"),
-  title: "Article Writer｜ 智能文章生成器",
+  title: "Article AI｜智能文章生成器",
   description:
     "A professional article rendering platform with advanced formatting and publishing capabilities.",
   openGraph: {
     type: "website",
     url: "https://article.zhaikr.com/",
-    title: "Article Writer｜ 智能文章生成器",
+    title: "Article AI｜智能文章生成器",
     description: "A professional article rendering platform with advanced formatting and publishing capabilities.",
     images: [
       {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Article Writer｜ 智能文章生成器",
+        alt: "Article AI｜智能文章生成器",
       }
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Article Writer｜ 智能文章生成器",
+    title: "Article AI｜智能文章生成器",
     description: "A professional article rendering platform with advanced formatting and publishing capabilities.",
     images: ["/og.png"],
     creator: "@zhaikr",
