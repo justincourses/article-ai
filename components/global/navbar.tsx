@@ -20,7 +20,7 @@ export function Navbar() {
   const isDashboardActive = pathname?.startsWith("/dashboard");
 
   return (
-    <header className="flex items-center justify-between w-full h-16 gap-4 px-4 rounded-xl bg-white/30 backdrop-blur-md border border-white/20">
+    <header className="flex items-center justify-between w-full h-16 gap-4 px-4 rounded-xl bg-white/30 backdrop-blur-md border border-white/20 px-4">
       <div className="flex gap-4">
         <SiteLogo />
         <div aria-hidden className="w-px h-6 bg-[#C7C7C8]" />
@@ -39,6 +39,17 @@ export function Navbar() {
                 )}
               >
                 ✍️ 写作中心
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild>
+              <Link
+                href="https://justin-pro.notion.site/article-ai-schedule?v=1afd90f4c8cd80e1ba6e000c9ebf6a72&pvs=4"
+                target="_blank"
+                className={navigationMenuTriggerStyle()}
+              >
+                📅 进度跟踪
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
