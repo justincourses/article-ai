@@ -2,10 +2,12 @@
  * Prompts for article summary generation
  */
 
+import { commonLengthRequirements, styleRequirements, timeReference, naturalWritingReview } from '../common';
+
 // Base prompt for summary generation
 export const summaryBasePrompt = `请为以下文章生成一个适合在社交媒体（如微信公众号、小红书等）发布的完整摘要：
 
-当前时间参考：{time}
+{timeRef}
 
 {article}`;
 
@@ -99,50 +101,21 @@ export const summaryStyleRequirements = {
 3. 总体长度控制在300-500字之间
 4. 使用 Markdown 格式
 5. 语言要轻松、自然，适合日常阅读
-6. 可以使用一些口语化表达和生活化比喻
-7. 可以适当使用emoji表情增加亲和力`,
+6. 可以使用一些口语化表达和生活化比喻，保持亲切友好的语气`,
 };
 
-// Image prompt requirements based on article length
+// Image prompt requirements for summaries
 export const summaryImagePromptRequirements = {
-  mini: `最后，请额外生成一段简短的用于AI图像生成的提示词（英文），描述一张能够直观表达文章核心内容的图片，格式为：
+  enabled: `7. 在摘要最后，请额外生成一个适合用于AI图像生成的提示词，格式如下：
 
 ## 图像提示词
-[英文图像生成提示词，简洁描述核心场景和风格]`,
+[详细描述与文章主题相关的场景、物体或概念，使用英文，包含足够的细节以便AI生成高质量图像]`,
 
-  short: `最后，请额外生成一段用于AI图像生成的提示词（英文），描述一张能够直观表达文章核心内容的图片，格式为：
-
-## 图像提示词
-[英文图像生成提示词，考虑文章类型和风格，描述具体场景、风格、色调等元素]`,
-
-  medium: `最后，请额外生成1-2段用于AI图像生成的提示词（英文），描述能够直观表达文章核心内容的插图，格式为：
-
-## 图像提示词1
-[英文图像生成提示词，考虑文章类型和风格，描述具体场景、风格、色调等元素]
-
-## 图像提示词2（可选）
-[英文图像生成提示词，描述另一个与文章内容相关的场景或概念]`,
-
-  long: `最后，请额外生成2-3段用于AI图像生成的提示词（英文），描述能够直观表达文章不同部分内容的插图，格式为：
-
-## 图像提示词1
-[英文图像生成提示词，考虑文章类型和风格，描述具体场景、风格、色调等元素]
-
-## 图像提示词2
-[英文图像生成提示词，描述另一个与文章内容相关的场景或概念]
-
-## 图像提示词3（可选）
-[英文图像生成提示词，描述第三个与文章内容相关的场景或概念]`
+  disabled: '',
 };
 
-// Unsplash search keyword requirement
-export const unsplashSearchKeywordRequirement = `此外，请生成一个简短的英文关键词（1-3个单词），用于在Unsplash图库中搜索与文章内容相关的图片，格式为：
-
-## Unsplash搜索关键词
-[简短的英文关键词，适合在Unsplash图库搜索，例如：nature, business meeting, technology等]`;
-
-// Legacy image prompt requirement for backward compatibility
-export const summaryImagePromptRequirement = summaryImagePromptRequirements.short;
+// Length-specific requirements for summaries
+export const summaryLengthRequirements = commonLengthRequirements;
 
 // Function to combine prompts based on requirements
 export const getSummaryPrompt = ({
@@ -151,33 +124,49 @@ export const getSummaryPrompt = ({
   format = "base",
   style = "social",
   includeImagePrompt = true,
-  length = "mini",
+  length = "short",
 }: {
-  time: string;
+  time?: string;
   article: string;
   format?: "simple" | "base" | "detailed";
   style?: "social" | "formal" | "casual";
   includeImagePrompt?: boolean;
   length?: "mini" | "short" | "medium" | "long";
 }) => {
-  const basePrompt = summaryBasePrompt.replace("{time}", time).replace("{article}", article);
+  // Get format requirements
   const formatReq = summaryFormatRequirements[format] || summaryFormatRequirements.base;
-  const styleReq = summaryStyleRequirements[style] || summaryStyleRequirements.social;
-  const imagePrompt = includeImagePrompt
-    ? (summaryImagePromptRequirements[length] || summaryImagePromptRequirements.short)
-    : "";
 
-  return `${basePrompt}
+  // Get style requirements
+  const styleReq = summaryStyleRequirements[style] || summaryStyleRequirements.social;
+
+  // Get length requirements
+  const lengthReq = summaryLengthRequirements[length] || summaryLengthRequirements.short;
+
+  // Get image prompt requirements
+  const imagePromptReq = includeImagePrompt ? summaryImagePromptRequirements.enabled : summaryImagePromptRequirements.disabled;
+
+  // Create the time reference
+  const timeRef = time ? timeReference(time) : '';
+
+  // Replace placeholders in the base prompt
+  return summaryBasePrompt
+    .replace('{timeRef}', timeRef)
+    .replace('{article}', article) + `
 
 ${formatReq}
 
 ${styleReq}
 
-${imagePrompt}
+${lengthReq}
 
-${unsplashSearchKeywordRequirement}
+${imagePromptReq}
 
-在生成摘要时，如果涉及时间相关内容，请参考提供的时间信息"${time}"。
+请确保摘要能够准确反映原文的核心内容，同时具有吸引力和可读性，适合在社交媒体平台上传播。
 
-直接返回 Markdown 格式的完整内容，不要使用代码块。`;
+在生成摘要时，请注意以下几点：
+1. 摘要应该简洁明了，直击要点，避免冗余内容
+2. 标题和要点应该有吸引力，但不要使用夸张或误导性的表述
+3. 确保摘要内容易于理解，不使用过于复杂或晦涩的表达
+
+${naturalWritingReview}`;
 };

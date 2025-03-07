@@ -2,6 +2,8 @@
  * Prompts for article structure generation
  */
 
+import { commonLengthRequirements, commonStructureRequirements, timeReference, naturalWritingReview } from '../common';
+
 // Base prompt for structure generation
 export const structureBasePrompt = `根据以下要求生成一篇文章的思维导图结构：
 
@@ -9,7 +11,7 @@ export const structureBasePrompt = `根据以下要求生成一篇文章的思�
 风格：{style}
 核心思路：{coreIdeas}
 文章篇幅：{wordCount}
-当前时间参考：{time}
+{timeRef}
 目标人群：
 {targetAudience}
 {exampleArticle}`;
@@ -26,58 +28,10 @@ export const formatTargetAudience = (targetAudience: any) => {
 };
 
 // Requirements for structure generation
-export const structureRequirements = {
-  base: `要求：
-1. 使用 Markdown 格式的缩进列表
-2. 结构要清晰，层次分明
-3. 每个要点要简洁明了
-4. 保持适当的缩进以表示层级关系
-5. 确保内容适合目标人群的阅读习惯和兴趣
-6. 根据指定篇幅合理规划各部分内容比例
-7. 内容要符合用户特征描述的偏好和行为习惯`,
-
-  detailed: `要求：
-1. 使用 Markdown 格式的缩进列表
-2. 结构要清晰，层次分明
-3. 每个要点要简洁明了
-4. 保持适当的缩进以表示层级关系
-5. 确保内容适合目标人群的阅读习惯和兴趣
-6. 根据指定篇幅合理规划各部分内容比例
-7. 内容要符合用户特征描述的偏好和行为习惯
-8. 为每个主要部分提供详细的子要点
-9. 包含引言和总结部分
-10. 考虑内容的逻辑流程和连贯性`,
-
-  simple: `要求：
-1. 使用 Markdown 格式的缩进列表
-2. 结构要简洁，只包含主要章节
-3. 每个要点要简洁明了
-4. 保持适当的缩进以表示层级关系
-5. 确保内容适合目标人群
-6. 根据指定篇幅合理规划结构`,
-};
+export const structureRequirements = commonStructureRequirements;
 
 // Length-specific structure requirements
-export const structureLengthRequirements = {
-  mini: `迷你结构要求：
-1. 总体结构极简，只包含2-4个主要部分
-2. 只使用一级列表，不要使用多层嵌套结构
-3. 适合300字以内的超短文章
-4. 每个部分的描述要极度精简`,
-
-  short: `短篇结构要求：
-1. 总体结构简洁，包含3-5个主要部分
-2. 适合300-800字的文章长度`,
-
-  medium: `中篇结构要求：
-1. 总体结构适中，包含4-6个主要部分
-2. 适合800-1500字的文章长度`,
-
-  long: `长篇结构要求：
-1. 总体结构详细，包含5-8个主要部分
-2. 可以适当保留两层结构，最好不要有三层结构
-3. 适合1500-3000字的文章长度`,
-};
+export const structureLengthRequirements = commonLengthRequirements;
 
 // Style-specific structure requirements
 export const structureStyleRequirements = {
@@ -100,22 +54,43 @@ export const structureStyleRequirements = {
 4. 结论部分应包含明确的号召行动`,
 
   descriptive: `描述性风格结构要求：
-1. 结构应有助于逐步展开场景、人物或事件的描述
-2. 可以按时间顺序、空间顺序或重要性顺序组织内容
-3. 应包含足够的细节描述部分
+1. 结构应围绕描述对象的不同方面或特征组织
+2. 可以按照空间顺序、时间顺序或重要性顺序安排内容
+3. 应包含生动细节和具体例子
 4. 适合旅游、产品介绍等需要生动描述的内容`,
 
   technical: `技术风格结构要求：
-1. 结构应包含明确的概念介绍、技术细节和应用场景
-2. 可以包含步骤说明、代码示例或技术规格等专业内容
-3. 应有清晰的信息层次，便于读者快速定位所需信息
+1. 结构应包含明确的概念介绍、技术细节和应用示例
+2. 可以使用步骤说明、比较分析等形式
+3. 应按照从基础到高级的顺序安排内容
 4. 适合教程、技术文档等专业内容`,
 
   storytelling: `故事性风格结构要求：
-1. 结构应符合故事叙述的基本框架，包含开端、发展、高潮和结局
-2. 可以包含人物介绍、场景设置、冲突和解决等元素
-3. 结构应有助于维持读者兴趣和情感投入
+1. 结构应包含明确的开端、发展、高潮和结局
+2. 可以使用场景描述、人物对话等叙事元素
+3. 应有清晰的情节线索和主题
 4. 适合案例分析、品牌故事等需要叙事性的内容`,
+};
+
+// Function to determine style type based on style description
+export const determineStyleType = (style: string): 'formal' | 'casual' | 'persuasive' | 'descriptive' | 'technical' | 'storytelling' => {
+  const styleLower = style.toLowerCase();
+
+  if (styleLower.includes('正式') || styleLower.includes('学术') || styleLower.includes('商业')) {
+    return 'formal';
+  } else if (styleLower.includes('轻松') || styleLower.includes('日常') || styleLower.includes('博客')) {
+    return 'casual';
+  } else if (styleLower.includes('说服') || styleLower.includes('营销') || styleLower.includes('倡导')) {
+    return 'persuasive';
+  } else if (styleLower.includes('描述') || styleLower.includes('旅游') || styleLower.includes('产品')) {
+    return 'descriptive';
+  } else if (styleLower.includes('技术') || styleLower.includes('教程') || styleLower.includes('指南')) {
+    return 'technical';
+  } else if (styleLower.includes('故事') || styleLower.includes('案例') || styleLower.includes('叙事')) {
+    return 'storytelling';
+  } else {
+    return 'casual'; // Default to casual
+  }
 };
 
 // Function to combine prompts based on requirements
@@ -126,52 +101,83 @@ export const getStructurePrompt = ({
   coreIdeas,
   wordCount,
   targetAudience,
-  exampleArticle,
+  exampleArticle = '',
   detailLevel = "base",
-  length = "medium",
+  length,
 }: {
-  time: string;
+  time?: string;
   topic: string;
   style: string;
   coreIdeas: string;
-  wordCount: string;
+  wordCount?: string;
   targetAudience?: any;
   exampleArticle?: string;
   detailLevel?: "simple" | "base" | "detailed";
   length?: "mini" | "short" | "medium" | "long";
 }) => {
-  const basePrompt = structureBasePrompt
-    .replace("{topic}", topic)
-    .replace("{style}", style)
-    .replace("{coreIdeas}", coreIdeas)
-    .replace("{wordCount}", wordCount)
-    .replace("{time}", time)
-    .replace("{targetAudience}", formatTargetAudience(targetAudience))
-    .replace(
-      "{exampleArticle}",
-      exampleArticle ? `参考文章：${exampleArticle}` : ""
-    );
+  // Determine length based on wordCount if not explicitly provided
+  const contentLength = length || (wordCount ?
+    (wordCount === "mini" ? "mini" :
+      parseInt(wordCount) <= 300 ? "mini" :
+      parseInt(wordCount) <= 800 ? "short" :
+      parseInt(wordCount) <= 1500 ? "medium" : "long")
+    : "medium");
 
+  // Format target audience
+  const formattedTargetAudience = formatTargetAudience(targetAudience);
+
+  // Determine style type
+  const styleType = determineStyleType(style);
+
+  // Get requirements based on detail level
   const detailReq = structureRequirements[detailLevel] || structureRequirements.base;
-  const lengthReq = structureLengthRequirements[length];
 
-  // 确定风格类型并获取相应的风格要求
-  let styleType: keyof typeof structureStyleRequirements = "formal"; // 默认为正式风格
-  if (style.includes("轻松") || style.includes("随意") || style.includes("casual")) {
-    styleType = "casual";
-  } else if (style.includes("说服") || style.includes("persuasive")) {
-    styleType = "persuasive";
-  } else if (style.includes("描述") || style.includes("descriptive")) {
-    styleType = "descriptive";
-  } else if (style.includes("技术") || style.includes("technical")) {
-    styleType = "technical";
-  } else if (style.includes("故事") || style.includes("storytelling")) {
-    styleType = "storytelling";
+  // Get length requirements
+  const lengthReq = structureLengthRequirements[contentLength] || structureLengthRequirements.medium;
+
+  // Get style requirements
+  const styleReq = structureStyleRequirements[styleType] || structureStyleRequirements.casual;
+
+  // Format example article if provided
+  const formattedExampleArticle = exampleArticle ? `\n\n参考文章：\n${exampleArticle}` : '';
+
+  // Create the time reference
+  const timeRef = time ? timeReference(time) : '';
+
+  // Define outline depth requirements based on content length
+  let outlineDepthReq = '';
+  if (contentLength === 'mini' || contentLength === 'short') {
+    outlineDepthReq = `
+大纲层级要求：
+1. 由于是${contentLength === 'mini' ? '迷你' : '短篇'}内容，请只使用一级标题进行简单分段
+2. 不要使用二级或更深层级的标题
+3. 保持结构简单明了，直接列出3-5个主要段落即可
+4. 每个段落用简短的一句话描述内容要点`;
+  } else if (contentLength === 'medium') {
+    outlineDepthReq = `
+大纲层级要求：
+1. 由于是中篇内容，主要使用一级标题进行分段
+2. 只在必要时使用二级标题展开复杂概念
+3. 避免使用三级或更深层级的标题
+4. 一级标题控制在4-6个左右`;
+  } else {
+    outlineDepthReq = `
+大纲层级要求：
+1. 由于是长篇内容，可以使用两级标题结构
+2. 一级标题用于主要章节划分，控制在5-7个左右
+3. 二级标题用于展开复杂概念或详细论述，每个一级标题下可有2-4个二级标题
+4. 避免使用三级或更深层级的标题，保持结构清晰`;
   }
 
-  const styleReq = structureStyleRequirements[styleType];
-
-  return `${basePrompt}
+  // Replace placeholders in the base prompt
+  return structureBasePrompt
+    .replace('{topic}', topic)
+    .replace('{style}', style)
+    .replace('{coreIdeas}', coreIdeas)
+    .replace('{wordCount}', wordCount || '不限')
+    .replace('{timeRef}', timeRef)
+    .replace('{targetAudience}', formattedTargetAudience)
+    .replace('{exampleArticle}', formattedExampleArticle) + `
 
 ${detailReq}
 
@@ -179,12 +185,16 @@ ${lengthReq}
 
 ${styleReq}
 
-风格与内容结合要求：
-1. 确保文章结构与"${style}"风格相匹配
-2. 根据"${wordCount}"的篇幅要求合理分配各部分内容
-3. 考虑目标人群的特征，确保结构和内容符合其阅读偏好
-4. 核心思路"${coreIdeas}"应贯穿整个结构设计
-5. 涉及时间相关内容时，参考提供的时间信息"${time}"
+${outlineDepthReq}
 
-直接返回 Markdown 格式的内容，不要使用代码块。`;
+请使用 Markdown 格式的缩进列表生成文章结构，确保结构清晰、层次分明，并符合所有要求。请直接返回内容，不要使用任何代码块（\`\`\`）包裹内容。
+
+在设计结构时，请注意以下几点：
+1. 结构应该自然流畅，避免过于机械或公式化的安排
+2. 各部分之间应有逻辑连贯性，便于读者理解
+3. 结构应该服务于内容，而不是为了结构而结构
+4. 考虑到最终文章的可读性和自然度，避免过于复杂的层级结构
+5. 不要使用代码块格式，直接返回纯文本的大纲内容
+
+${naturalWritingReview}`;
 };

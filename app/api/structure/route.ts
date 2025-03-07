@@ -6,7 +6,7 @@ import {
 } from "ai";
 
 import { myProvider } from "@/lib/ai/models";
-import { systemPrompt, structurePrompts } from "@/constants/prompts";
+import { systemPrompt, structurePrompts, determineContentLength, timeReference } from "@/constants/prompts";
 import { auth } from "@clerk/nextjs/server";
 import { DEFAULT_MODELS } from "@/constants/writer/models";
 
@@ -34,27 +34,7 @@ export async function POST(request: Request) {
   }
 
   // Determine length based on wordCount if not explicitly provided
-  let contentLength = length;
-  if (!contentLength && wordCount) {
-    // If wordCount is "mini", use mini length
-    if (wordCount === "mini") {
-      contentLength = "mini";
-    } else {
-      // Otherwise try to parse as number
-      const count = parseInt(wordCount);
-      if (count <= 300) {
-        contentLength = "mini";
-      } else if (count <= 800) {
-        contentLength = "short";
-      } else if (count <= 1500) {
-        contentLength = "medium";
-      } else {
-        contentLength = "long";
-      }
-    }
-  } else if (!contentLength) {
-    contentLength = "medium";
-  }
+  const contentLength = !length && wordCount ? determineContentLength(wordCount) : (length || "medium");
 
   // Generate the prompt using the prompt utility
   const prompt = structurePrompts.getStructurePrompt({
@@ -66,7 +46,7 @@ export async function POST(request: Request) {
     targetAudience,
     exampleArticle,
     detailLevel,
-    length: contentLength,
+    length: contentLength as "mini" | "short" | "medium" | "long",
   });
 
   // Create a message with the prompt
