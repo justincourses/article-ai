@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Message } from 'ai'
@@ -65,9 +65,10 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
   const [isEditing, setIsEditing] = useState(false)
   const [renderedContent, setRenderedContent] = useState('')
   const [isCopied, setIsCopied] = useState(false)
-  const [showReasoning, setShowReasoning] = useState(true)
+  const [showReasoning, setShowReasoning] = useState(false)
   const { activeContentTab } = useContentStore()
   const [wordCount, setWordCount] = useState(0)
+  const reasoningSetRef = useRef(false)
 
   // 处理消息内容，分离推理和正文
   const processMessageContent = (message: Message | undefined) => {
@@ -222,16 +223,16 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
 
   // 调试推理内容
   useEffect(() => {
-    if (hasReasoning) {
+    if (hasReasoning && !reasoningSetRef.current) {
       console.log('Reasoning content available:', reasoning.substring(0, 100) + '...')
-      // 只有当 showReasoning 为 false 时才设置为 true，避免无限循环
-      if (!showReasoning) {
-        setShowReasoning(true)
-      }
-    } else {
+      setShowReasoning(true)
+      reasoningSetRef.current = true
+    } else if (!hasReasoning) {
       console.log('No reasoning content available')
+      // 如果没有推理内容，重置标志，以便下次有推理内容时可以再次显示
+      reasoningSetRef.current = false
     }
-  }, [reasoning, hasReasoning, showReasoning])
+  }, [reasoning, hasReasoning])
 
   // Reset rendered content when messages change or are cleared
   useEffect(() => {
@@ -292,6 +293,13 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
       setWordCount(0);
     }
   }, [content]);
+
+  // 当切换内容标签时，重置推理内容的显示状态
+  useEffect(() => {
+    // 重置推理内容的显示状态
+    setShowReasoning(false)
+    reasoningSetRef.current = false
+  }, [activeContentTab])
 
   if (isLoading && messages.length === 0) {
     return (
@@ -368,7 +376,10 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
                         {index === messages.length - 1 &&
                          activeContentTab === CONTENT_TABS.SUMMARY &&
                          content && (
-                          <SummaryImage summaryText={content} />
+                          <SummaryImage
+                            summaryText={content}
+                            isApiComplete={!isLoading && index === messages.length - 1}
+                          />
                         )}
                       </div>
                     )
@@ -413,7 +424,10 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
               size="sm"
               className="flex items-center gap-1"
               disabled={!hasReasoning || isEditing}
-              onClick={() => setShowReasoning(!showReasoning)}
+              onClick={() => {
+                setShowReasoning(!showReasoning);
+                // 当手动切换时，不要重置 reasoningSetRef，这样 useEffect 就不会再次触发
+              }}
             >
               <span>🧠</span>
               <span>思考过程</span>

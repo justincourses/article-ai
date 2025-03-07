@@ -4,7 +4,7 @@
 export const DEFAULT_MODELS = {
   OUTLINE: 'chat-model-large',
   ARTICLE: 'chat-model-reasoning',
-  SUMMARY: 'chat-model-function',
+  SUMMARY: 'chat-model-small',
 };
 
 // Default article configuration

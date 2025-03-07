@@ -10,9 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 interface SummaryImageProps {
   summaryText: string;
   autoGenerate?: boolean;
+  isApiComplete?: boolean;
 }
 
-export function SummaryImage({ summaryText, autoGenerate = false }: SummaryImageProps) {
+export function SummaryImage({
+  summaryText,
+  autoGenerate = false,
+  isApiComplete = true
+}: SummaryImageProps) {
   const { isGenerating, imageUrl, imagePrompt, error, isVip, generateImage } = useImageGeneration();
   const [hasAttemptedGeneration, setHasAttemptedGeneration] = useState(false);
   const initialRenderRef = useRef(true);
@@ -73,7 +78,10 @@ export function SummaryImage({ summaryText, autoGenerate = false }: SummaryImage
         </TabsList>
 
         <TabsContent value="unsplash" className="mt-4">
-          <UnsplashImageSelector summaryText={summaryText} />
+          <UnsplashImageSelector
+            summaryText={summaryText}
+            isApiComplete={isApiComplete}
+          />
         </TabsContent>
 
         <TabsContent value="ai" className="mt-4">

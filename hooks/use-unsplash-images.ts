@@ -206,3 +206,64 @@ export function extractSearchTermsFromSummary(summaryText: string): string[] {
   // 5. 最后的回退方案
   return ["nature landscape"]; // 默认搜索词
 }
+
+// Helper function to extract Unsplash search keywords from summary text
+export function extractUnsplashKeywordFromSummary(summaryText: string): string {
+  // 尝试匹配 "## Unsplash搜索关键词" 部分 - 支持多种格式
+  // 1. 标准格式：## Unsplash搜索关键词 后面跟关键词
+  const standardMatch = summaryText.match(/##\s*Unsplash搜索关键词\s*\n([^\n#]+)/i);
+
+  // 2. 带方括号格式：## Unsplash搜索关键词 [关键词]
+  const bracketMatch = summaryText.match(/##\s*Unsplash搜索关键词\s*\n\s*\[([^\]]+)\]/i);
+
+  // 3. 带冒号格式：## Unsplash搜索关键词: 关键词
+  const colonMatch = summaryText.match(/##\s*Unsplash搜索关键词\s*:\s*([^\n#]+)/i);
+
+  // 4. 特殊标记格式：<!-- unsplash-keyword: 关键词 -->
+  const commentMatch = summaryText.match(/<!--\s*unsplash-keyword:\s*([^>]+?)\s*-->/i);
+
+  // 按优先级检查匹配结果
+  let keyword = '';
+
+  if (commentMatch && commentMatch[1]) {
+    // 特殊标记格式优先级最高
+    keyword = commentMatch[1].trim();
+  } else if (bracketMatch && bracketMatch[1]) {
+    // 带方括号格式
+    keyword = bracketMatch[1].trim();
+  } else if (colonMatch && colonMatch[1]) {
+    // 带冒号格式
+    keyword = colonMatch[1].trim();
+  } else if (standardMatch && standardMatch[1]) {
+    // 标准格式
+    keyword = standardMatch[1].trim();
+    // 移除可能的方括号
+    keyword = keyword.replace(/^\[|\]$/g, '').trim();
+  }
+
+  // 如果找到了关键词，进行清理和验证
+  if (keyword) {
+    // 确保关键词是英文（如果是中文，尝试提取英文部分或转换）
+    if (/[\u4e00-\u9fa5]/.test(keyword)) {
+      // 如果包含中英文混合，尝试提取英文部分
+      const englishParts = keyword.match(/[a-zA-Z][a-zA-Z\s]*/g);
+      if (englishParts && englishParts.length > 0) {
+        // 使用找到的英文部分
+        keyword = englishParts.join(' ').trim();
+      } else {
+        // 如果没有英文部分，回退到默认关键词
+        console.log('Chinese keyword found, but no English parts extracted:', keyword);
+        return extractSearchTermsFromSummary(summaryText)[0] || 'nature';
+      }
+    }
+
+    // 限制关键词长度，最多取前5个单词
+    keyword = keyword.split(' ').slice(0, 5).join(' ');
+
+    console.log('Final extracted keyword:', keyword);
+    return keyword;
+  }
+
+  // 如果没有找到专门的 Unsplash 关键词，回退到之前的方法
+  return extractSearchTermsFromSummary(summaryText)[0] || 'nature';
+}
