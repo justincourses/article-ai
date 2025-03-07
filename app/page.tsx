@@ -35,7 +35,7 @@ export default function Home() {
               输入关键词，瞬间获得专业内容，让创作更快捷高效。
             </p>
 
-            <div className="flex gap-3 justify-center my-20">
+            <div className="flex gap-3 justify-center mb-16">
               <SignedIn>
                 <Link
                   href="/dashboard"

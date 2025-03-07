@@ -1,6 +1,6 @@
 export function Footer() {
   return (
-    <footer className="max-w-[75rem] bg-white w-full mx-auto pt-4 pb-2 border-t border-[#EEEEF0] flex justify-between">
+    <footer className="max-w-[75rem] bg-white w-full mx-auto pt-4 pb-2 border-t border-[#EEEEF0] flex justify-between px-4">
       <a
         href="https://interjc.net"
         target="_blank"
@@ -18,6 +18,31 @@ export function Footer() {
             className="flex items-center gap-2 font-medium text-[0.8125rem] rounded-full px-3 py-2 hover:bg-gray-100"
           >
             Justin Course{" "}
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect x="2" y="2" width="12" height="12" rx="3" fill="#EEEEF0" />
+              <path
+                d="M5.75 10.25L10.25 5.75M10.25 5.75H6.75M10.25 5.75V9.25"
+                stroke="#9394A1"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://justin-pro.notion.site/1afd90f4c8cd80b3ac58d94cba172422?pvs=105"
+            target="_blank"
+            className="flex items-center gap-2 font-medium text-[0.8125rem] rounded-full px-3 py-2 hover:bg-gray-100"
+          >
+            <span>Feedback</span>
             <svg
               width="16"
               height="16"
