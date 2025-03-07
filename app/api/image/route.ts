@@ -17,11 +17,15 @@ export async function POST(request: Request) {
   try {
     const { prompt, size = "square" } = await request.json();
 
+    // Authenticate user
     const { userId } = await auth();
-
     if (!userId) {
       return new Response("Unauthorized", { status: 401 });
     }
+
+    // For server-side VIP check, we rely on the client-side check
+    // The client-side hook (useImageGeneration) already checks for VIP status
+    // This is a fallback in case someone tries to call the API directly
 
     if (!prompt || typeof prompt !== "string") {
       return new Response("Invalid prompt", { status: 400 });

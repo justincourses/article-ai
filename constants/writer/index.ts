@@ -60,6 +60,7 @@ export const API_ENDPOINTS = {
   ARTICLE: '/api/article',
   SUMMARY: '/api/summary',
   IMAGE: '/api/image',
+  PICTURE: '/api/picture',
 };
 
 // Chat model IDs

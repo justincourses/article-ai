@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { extractImagePrompts } from '@/lib/utils/image-prompt';
 import { API_ENDPOINTS } from '@/constants/writer';
 
@@ -7,6 +8,7 @@ interface UseImageGenerationResult {
   imageUrl: string | null;
   imagePrompt: string | null;
   error: string | null;
+  isVip: boolean;
   generateImage: (summaryText: string) => Promise<string | null>;
 }
 
@@ -14,10 +16,14 @@ interface UseImageGenerationResult {
  * Hook for generating images from summary text
  */
 export function useImageGeneration(): UseImageGenerationResult {
+  const { user } = useUser();
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imagePrompt, setImagePrompt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if user has VIP status
+  const isVip = user?.publicMetadata?.vip === true;
 
   const generateImage = useCallback(async (summaryText: string): Promise<string | null> => {
     if (!summaryText) {
@@ -26,6 +32,12 @@ export function useImageGeneration(): UseImageGenerationResult {
     }
 
     if (isGenerating) {
+      return null;
+    }
+
+    // Check VIP status before generating image
+    if (!isVip) {
+      setError('图片生成是VIP专属功能，请升级到VIP会员');
       return null;
     }
 
@@ -108,13 +120,14 @@ export function useImageGeneration(): UseImageGenerationResult {
       setIsGenerating(false);
       return null;
     }
-  }, [isGenerating]); // 只依赖 isGenerating 状态
+  }, [isGenerating, isVip]); // 只依赖 isGenerating 和 isVip 状态
 
   return {
     isGenerating,
     imageUrl,
     imagePrompt,
     error,
+    isVip,
     generateImage,
   };
 }

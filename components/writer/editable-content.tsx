@@ -224,11 +224,14 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
   useEffect(() => {
     if (hasReasoning) {
       console.log('Reasoning content available:', reasoning.substring(0, 100) + '...')
-      setShowReasoning(true)
+      // 只有当 showReasoning 为 false 时才设置为 true，避免无限循环
+      if (!showReasoning) {
+        setShowReasoning(true)
+      }
     } else {
       console.log('No reasoning content available')
     }
-  }, [reasoning, hasReasoning])
+  }, [reasoning, hasReasoning, showReasoning])
 
   // Reset rendered content when messages change or are cleared
   useEffect(() => {
