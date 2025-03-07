@@ -16,6 +16,7 @@ interface UIState {
   setAdditionalRequirements: (requirements: string) => void
   setActiveConfigTab: (tab: ConfigTab) => void
   resetUI: () => void
+  clearStorage: () => void
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -33,4 +34,10 @@ export const useUIStore = create<UIState>((set) => ({
     additionalRequirements: '',
     activeConfigTab: TABS.BASIC,
   }),
+  clearStorage: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.clear()
+      window.location.reload()
+    }
+  }
 }))

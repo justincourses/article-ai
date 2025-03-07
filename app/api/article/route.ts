@@ -6,7 +6,7 @@ import {
 } from "ai";
 
 import { myProvider } from "@/lib/ai/models";
-import { systemPrompt, articlePrompts } from "@/constants/prompts";
+import { systemPrompt, articlePrompts, determineContentLength, timeReference } from "@/constants/prompts";
 import { auth } from "@clerk/nextjs/server";
 import { DEFAULT_MODELS } from "@/constants/writer/models";
 
@@ -34,35 +34,18 @@ export async function POST(request: Request) {
   }
 
   // Determine length based on wordCount if provided
-  let contentLength = length;
-  if (wordCount) {
-    // If wordCount is "mini", use mini length
-    if (wordCount === "mini") {
-      contentLength = "mini";
-    } else {
-      // Otherwise try to parse as number
-      const count = parseInt(wordCount);
-      if (count <= 300) {
-        contentLength = "mini";
-      } else if (count <= 800) {
-        contentLength = "short";
-      } else if (count <= 1500) {
-        contentLength = "medium";
-      } else {
-        contentLength = "long";
-      }
-    }
-  }
+  const contentLength = wordCount ? determineContentLength(wordCount) : length;
 
   // Extract requirements from the message content if not provided directly
   let extractedRequirements = requirements;
   if (!extractedRequirements && messages && messages.length > 0) {
     const lastMessage = messages[messages.length - 1];
-    const content = lastMessage.content;
-
-    // Check if the content contains requirements
-    if (content.includes('with requirements:')) {
-      extractedRequirements = content.split('with requirements:')[1].trim();
+    if (lastMessage.role === "user" && typeof lastMessage.content === "string") {
+      const content = lastMessage.content;
+      const requirementsMatch = content.match(/要求：([\s\S]*?)(?=\n\n|$)/);
+      if (requirementsMatch && requirementsMatch[1]) {
+        extractedRequirements = requirementsMatch[1].trim();
+      }
     }
   }
 
@@ -74,7 +57,7 @@ export async function POST(request: Request) {
     coreIdeas,
     outline,
     requirements: extractedRequirements,
-    length: contentLength,
+    length: contentLength as "mini" | "short" | "medium" | "long",
     styleType,
   });
 

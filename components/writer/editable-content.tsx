@@ -65,10 +65,13 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
   const [isEditing, setIsEditing] = useState(false)
   const [renderedContent, setRenderedContent] = useState('')
   const [isCopied, setIsCopied] = useState(false)
+  const [isDomCopied, setIsDomCopied] = useState(false)
+  const [isReasoningCopied, setIsReasoningCopied] = useState(false)
   const [showReasoning, setShowReasoning] = useState(false)
   const { activeContentTab } = useContentStore()
   const [wordCount, setWordCount] = useState(0)
   const reasoningSetRef = useRef(false)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   // 处理消息内容，分离推理和正文
   const processMessageContent = (message: Message | undefined) => {
@@ -294,13 +297,6 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
     }
   }, [content]);
 
-  // 当切换内容标签时，重置推理内容的显示状态
-  useEffect(() => {
-    // 重置推理内容的显示状态
-    setShowReasoning(false)
-    reasoningSetRef.current = false
-  }, [activeContentTab])
-
   if (isLoading && messages.length === 0) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-16rem)] min-h-[564px]">
@@ -355,6 +351,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
                           />
                         )}
                         <div
+                          ref={index === messages.length - 1 ? contentRef : undefined}
                           className={`prose prose-sm max-w-none ${
                             index < messages.length - 1 ? "opacity-50 mb-4" : ""
                           }`}
@@ -408,8 +405,55 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
               }}
             >
               <span>{isCopied ? "✅" : "📋"}</span>
-              <span>{isCopied ? "已复制" : "复制内容"}</span>
+              <span>{isCopied ? "已复制" : "复制 Markdown"}</span>
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1"
+              onClick={() => {
+                if (contentRef.current) {
+                  try {
+                    // Create a range and selection
+                    const range = document.createRange();
+                    range.selectNodeContents(contentRef.current);
+                    const selection = window.getSelection();
+                    if (selection) {
+                      // Clear any current selection
+                      selection.removeAllRanges();
+                      // Select the content
+                      selection.addRange(range);
+                      // Execute copy command (still widely supported for HTML content)
+                      document.execCommand('copy');
+                      // Deselect
+                      selection.removeAllRanges();
+                    }
+                    setIsDomCopied(true);
+                    setTimeout(() => setIsDomCopied(false), 2000);
+                  } catch (err) {
+                    console.error('Failed to copy rich text content:', err);
+                  }
+                }
+              }}
+            >
+              <span>{isDomCopied ? "✅" : "📄"}</span>
+              <span>{isDomCopied ? "已复制" : "复制内容"}</span>
+            </Button>
+            {hasReasoning && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+                onClick={() => {
+                  navigator.clipboard.writeText(reasoning);
+                  setIsReasoningCopied(true);
+                  setTimeout(() => setIsReasoningCopied(false), 2000);
+                }}
+              >
+                <span>{isReasoningCopied ? "✅" : "🧠"}</span>
+                <span>{isReasoningCopied ? "已复制" : "复制推理"}</span>
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -419,7 +463,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
               <span>{isEditing ? "👁️" : "✏️"}</span>
               <span>{isEditing ? "预览模式" : "编辑模式"}</span>
             </Button>
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               className="flex items-center gap-1"
@@ -431,7 +475,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
             >
               <span>🧠</span>
               <span>思考过程</span>
-            </Button>
+            </Button> */}
           </div>
         </div>
       )}

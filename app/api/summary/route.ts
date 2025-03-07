@@ -6,7 +6,7 @@ import {
 } from "ai";
 
 import { myProvider } from "@/lib/ai/models";
-import { systemPrompt, summaryPrompts } from "@/constants/prompts";
+import { systemPrompt, summaryPrompts, timeReference } from "@/constants/prompts";
 import { auth } from "@clerk/nextjs/server";
 import { DEFAULT_MODELS } from "@/constants/writer/models";
 

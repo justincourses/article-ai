@@ -37,6 +37,16 @@ export interface ArticleConfig {
     interests: string[]
     userTraits: string
   }
+  writerPersona: {
+    type: string
+    style: string
+    characteristics: string
+  }
+  reviewerInfo: {
+    hasReviewer: boolean
+    reviewerType: string
+    reviewerRequirements: string
+  }
 }
 
 export type Step = 'outline' | 'article' | 'summary'
