@@ -36,13 +36,21 @@ export async function POST(request: Request) {
   // Determine length based on wordCount if not explicitly provided
   let contentLength = length;
   if (!contentLength && wordCount) {
-    const count = parseInt(wordCount);
-    if (count <= 800) {
-      contentLength = "short";
-    } else if (count <= 1500) {
-      contentLength = "medium";
+    // If wordCount is "mini", use mini length
+    if (wordCount === "mini") {
+      contentLength = "mini";
     } else {
-      contentLength = "long";
+      // Otherwise try to parse as number
+      const count = parseInt(wordCount);
+      if (count <= 300) {
+        contentLength = "mini";
+      } else if (count <= 800) {
+        contentLength = "short";
+      } else if (count <= 1500) {
+        contentLength = "medium";
+      } else {
+        contentLength = "long";
+      }
     }
   } else if (!contentLength) {
     contentLength = "medium";

@@ -24,12 +24,34 @@ export async function POST(request: Request) {
     messages,
     length = "medium",
     styleType = "casual",
+    wordCount,
   } = await request.json();
 
   const { userId } = await auth();
 
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
+  }
+
+  // Determine length based on wordCount if provided
+  let contentLength = length;
+  if (wordCount) {
+    // If wordCount is "mini", use mini length
+    if (wordCount === "mini") {
+      contentLength = "mini";
+    } else {
+      // Otherwise try to parse as number
+      const count = parseInt(wordCount);
+      if (count <= 300) {
+        contentLength = "mini";
+      } else if (count <= 800) {
+        contentLength = "short";
+      } else if (count <= 1500) {
+        contentLength = "medium";
+      } else {
+        contentLength = "long";
+      }
+    }
   }
 
   // Extract requirements from the message content if not provided directly
@@ -52,7 +74,7 @@ export async function POST(request: Request) {
     coreIdeas,
     outline,
     requirements: extractedRequirements,
-    length,
+    length: contentLength,
     styleType,
   });
 

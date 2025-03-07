@@ -21,7 +21,8 @@ export const STYLE_OPTIONS = [
 ];
 
 export const WORD_COUNT_OPTIONS = [
-  { value: 'short', label: '短文 (800字以内)' },
+  { value: 'mini', label: '迷你 (300字以内)' },
+  { value: 'short', label: '短文 (300-800字)' },
   { value: 'medium', label: '中等 (800-1500字)' },
   { value: 'long', label: '长文 (1500-3000字)' },
 ];
@@ -58,6 +59,7 @@ export const API_ENDPOINTS = {
   STRUCTURE: '/api/structure',
   ARTICLE: '/api/article',
   SUMMARY: '/api/summary',
+  IMAGE: '/api/image',
 };
 
 // Chat model IDs

@@ -105,6 +105,11 @@ export const summaryStyleRequirements = {
 
 // Image prompt requirements based on article length
 export const summaryImagePromptRequirements = {
+  mini: `最后，请额外生成一段简短的用于AI图像生成的提示词（英文），描述一张能够直观表达文章核心内容的图片，格式为：
+
+## 图像提示词
+[英文图像生成提示词，简洁描述核心场景和风格]`,
+
   short: `最后，请额外生成一段用于AI图像生成的提示词（英文），描述一张能够直观表达文章核心内容的图片，格式为：
 
 ## 图像提示词
@@ -140,14 +145,14 @@ export const getSummaryPrompt = ({
   format = "base",
   style = "social",
   includeImagePrompt = true,
-  length = "short",
+  length = "mini",
 }: {
   time: string;
   article: string;
   format?: "simple" | "base" | "detailed";
   style?: "social" | "formal" | "casual";
   includeImagePrompt?: boolean;
-  length?: "short" | "medium" | "long";
+  length?: "mini" | "short" | "medium" | "long";
 }) => {
   const basePrompt = summaryBasePrompt.replace("{time}", time).replace("{article}", article);
   const formatReq = summaryFormatRequirements[format] || summaryFormatRequirements.base;

@@ -8,6 +8,7 @@ import { marked } from 'marked'
 import { throttle } from 'lodash'
 import { useContentStore } from '@/store/writer/content-store'
 import { CONTENT_TABS } from '@/constants/writer'
+import { SummaryImage } from './SummaryImage'
 
 interface ReasoningDisplayProps {
   content: string
@@ -17,26 +18,14 @@ interface ReasoningDisplayProps {
 // 推理内容显示组件
 const ReasoningDisplay = ({ content, isVisible }: ReasoningDisplayProps) => {
   const [isExpanded, setIsExpanded] = useState(true)
-  const [renderedContent, setRenderedContent] = useState('')
 
   // 使用 useMemo 缓存解析后的 HTML，避免不必要的重新渲染
-  const parsedHtml = useMemo(() => {
+  const renderedContent = useMemo(() => {
     if (!content) return ''
     return marked.parse(content, { breaks: true }) as string
   }, [content])
 
-  // 只在 parsedHtml 变化时更新 renderedContent
-  useEffect(() => {
-    setRenderedContent(parsedHtml)
-  }, [parsedHtml])
-
-  // 添加调试日志
-  useEffect(() => {
-    console.log('ReasoningDisplay props:', { contentLength: content?.length, isVisible })
-  }, [content, isVisible])
-
   if (!isVisible || !content) {
-    console.log('ReasoningDisplay hidden because:', !isVisible ? 'not visible' : 'no content')
     return null
   }
 
@@ -371,6 +360,13 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
                                   })(),
                           }}
                         />
+
+                        {/* Add SummaryImage component for the last message in summary tab */}
+                        {index === messages.length - 1 &&
+                         activeContentTab === CONTENT_TABS.SUMMARY &&
+                         content && (
+                          <SummaryImage summaryText={content} />
+                        )}
                       </div>
                     )
                 )}

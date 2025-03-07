@@ -31,6 +31,7 @@ export async function GET(request: Request) {
     topic: '人工智能在医疗领域的应用',
     style: 'formal',
     coreIdeas: '探讨AI如何改变医疗诊断和治疗方式',
+    wordCount: 'medium',
     outline: `# 人工智能在医疗领域的应用
 - 引言
   - 医疗行业面临的挑战
