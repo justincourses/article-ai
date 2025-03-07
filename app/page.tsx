@@ -19,7 +19,7 @@ export default function Home() {
           <div className="px-10 py-16 text-center">
             <div className="w-full max-w-[75rem] mx-auto flex justify-center mb-4">
               <div className="inline-flex items-center gap-2 bg-[#F5F5F5] px-3 py-1.5 rounded-full">
-                <span className="text-blue-600 text-sm font-medium">免费!</span>
+                <span className="text-blue-600 text-sm font-medium">限时免费!</span>
                 <span className="text-sm text-gray-600">Article AI - 智能文章生成器 ✨</span>
               </div>
             </div>
