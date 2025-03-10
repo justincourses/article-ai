@@ -393,7 +393,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
             <span className="mr-1">📊</span>
             <span>字数: {wordCount}</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -405,7 +405,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
               }}
             >
               <span>{isCopied ? "✅" : "📋"}</span>
-              <span>{isCopied ? "已复制" : "复制 Markdown"}</span>
+              <span>{isCopied ? "已复制" : "复制纯文本"}</span>
             </Button>
             <Button
               variant="outline"
@@ -461,7 +461,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
               onClick={() => setIsEditing(!isEditing)}
             >
               <span>{isEditing ? "👁️" : "✏️"}</span>
-              <span>{isEditing ? "预览模式" : "编辑模式"}</span>
+              <span>{isEditing ? "预览" : "编辑"}</span>
             </Button>
             {/* <Button
               variant="outline"

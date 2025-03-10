@@ -71,6 +71,7 @@ export function ActionButtons() {
       <Button
         onClick={handleOutlineGeneration}
         disabled={isGeneratingOutline}
+        size="sm"
         className="w-auto px-4 bg-blue-500 hover:bg-blue-400 transition-colors text-white rounded-md"
       >
         {isGeneratingOutline
@@ -81,7 +82,8 @@ export function ActionButtons() {
       </Button>
       <Button
         onClick={handleArticleGeneration}
-        disabled={isGeneratingArticle}
+        disabled={isGeneratingArticle || !outline}
+        size="sm"
         className="w-auto px-4 bg-purple-500 hover:bg-purple-400 transition-colors text-white rounded-md"
       >
         {isGeneratingArticle
@@ -92,7 +94,8 @@ export function ActionButtons() {
       </Button>
       <Button
         onClick={handleSummaryGeneration}
-        disabled={isGeneratingSummary}
+        disabled={isGeneratingSummary || !article}
+        size="sm"
         className="w-auto px-4 bg-teal-600 hover:bg-teal-500 transition-colors text-white rounded-md"
       >
         {isGeneratingSummary
@@ -108,7 +111,7 @@ export function ActionButtons() {
         className="ml-auto"
         title="重置所有配置"
       >
-        <Eraser className="h-5 w-5 text-gray-500 hover:text-red-500" />
+        <Eraser className="h-4 w-4 text-gray-500 hover:text-red-500" />
       </Button>
     </div>
   );
