@@ -13,26 +13,44 @@ export function RequirementsDialog() {
   const {
     isDialogOpen,
     setIsDialogOpen,
+    dialogType,
     additionalRequirements,
     setAdditionalRequirements
   } = useUIStore()
 
   const { setActiveContentTab } = useContentStore()
-  const { handleGenerateArticle, isGeneratingArticle } = useArticleService()
+  const {
+    handleGenerateOutline,
+    handleGenerateArticle,
+    isGeneratingOutline,
+    isGeneratingArticle
+  } = useArticleService()
 
   const handleSubmit = async () => {
     setIsDialogOpen(false)
-    setActiveContentTab(CONTENT_TABS.ARTICLE)
-    await handleGenerateArticle(additionalRequirements)
+    if (dialogType === 'outline') {
+      setActiveContentTab(CONTENT_TABS.OUTLINE)
+      await handleGenerateOutline(additionalRequirements)
+    } else if (dialogType === 'article') {
+      setActiveContentTab(CONTENT_TABS.ARTICLE)
+      await handleGenerateArticle(additionalRequirements)
+    }
   }
+
+  const isGenerating = dialogType === 'outline' ? isGeneratingOutline : isGeneratingArticle
+  const dialogTitle = dialogType === 'outline' ? '大纲生成要求' : '文章生成要求'
+  const dialogDescription = dialogType === 'outline'
+    ? '请输入您对大纲生成的额外要求，例如特定的结构或内容要点。'
+    : '请输入您对文章生成的额外要求，例如特定的写作风格、结构或内容要点。'
+  const buttonText = dialogType === 'outline' ? '生成大纲' : '生成文章'
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>额外生成要求</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
-            请输入您对文章生成的额外要求，例如特定的写作风格、结构或内容要点。
+            {dialogDescription}
           </DialogDescription>
         </DialogHeader>
 
@@ -54,9 +72,9 @@ export function RequirementsDialog() {
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isGeneratingArticle}
+            disabled={isGenerating}
           >
-            生成文章
+            {buttonText}
           </Button>
         </DialogFooter>
       </DialogContent>

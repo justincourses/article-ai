@@ -103,7 +103,10 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
   const getThemeStyles = useMemo(() => {
     // If theme is prose, return empty styles to use original prose
     if (theme === 'prose') {
-      return {};
+      return {
+        '--md-primary-color': primaryColor,
+        '--foreground': primaryColor
+      } as React.CSSProperties;
     }
 
     const selectedTheme = themeMap[theme as keyof typeof themeMap];
@@ -111,8 +114,8 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
     const convertedStyles = Object.entries(selectedTheme.base).reduce((acc, [key, value]) => {
       // Handle CSS custom properties (variables) that start with '--'
       if (key.startsWith('--')) {
-        if (key === '--md-primary-color') {
-          acc[key] = primaryColor; // Use selected color instead of theme default
+        if (key === '--md-primary-color' || key === '--foreground') {
+          acc[key] = primaryColor;
         } else {
           acc[key] = value;
         }
@@ -130,14 +133,15 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
   // Apply block styles to elements inside the preview-content div
   useEffect(() => {
     if (contentRef.current) {
-      // If theme is prose, reset all styles except primary color
+      // If theme is prose, reset all styles except primary color and foreground
       if (theme === 'prose') {
         const elements = contentRef.current.querySelectorAll('*');
         elements.forEach((element) => {
           (element as HTMLElement).removeAttribute('style');
         });
-        // Still apply the primary color
+        // Apply both primary color and foreground
         document.documentElement.style.setProperty('--md-primary-color', primaryColor);
+        document.documentElement.style.setProperty('--foreground', primaryColor);
         return;
       }
 

@@ -18,7 +18,7 @@ export function ActionButtons() {
     setActiveContentTab
   } = useContentStore()
 
-  const { setIsDialogOpen } = useUIStore()
+  const { setIsDialogOpen, setDialogType } = useUIStore()
   const { articleConfig } = useWriterConfig()
 
   const {
@@ -41,6 +41,7 @@ export function ActionButtons() {
 
   const handleOutlineGeneration = () => {
     if (!articleConfig.topic || !articleConfig.style || !articleConfig.wordCount || !articleConfig.coreIdeas) {
+      setDialogType('outline')
       setIsDialogOpen(true)
       return
     }
@@ -53,7 +54,8 @@ export function ActionButtons() {
       handleOutlineGeneration()
       return
     }
-    handleGenerateArticle()
+    setDialogType('article')
+    setIsDialogOpen(true)
     setActiveContentTab(CONTENT_TABS.ARTICLE)
   }
 
@@ -66,11 +68,13 @@ export function ActionButtons() {
     setActiveContentTab(CONTENT_TABS.SUMMARY)
   }
 
+  const isOutlineButtonDisabled = isGeneratingOutline || !articleConfig.topic || !articleConfig.style || !articleConfig.wordCount || !articleConfig.coreIdeas
+
   return (
     <div className="flex flex-col gap-2 flex-wrap lg:flex-row lg:gap-1 mt-12 border-t pt-4">
       <Button
         onClick={handleOutlineGeneration}
-        disabled={isGeneratingOutline}
+        disabled={isOutlineButtonDisabled}
         size="sm"
         className="w-auto px-4 bg-blue-500 hover:bg-blue-400 transition-colors text-white rounded-md"
       >

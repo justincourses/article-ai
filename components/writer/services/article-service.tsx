@@ -128,12 +128,13 @@ export function useArticleService() {
   }, [isGeneratingSummaryState, setIsGeneratingSummary]);
 
   // Handler functions
-  const handleGenerateOutline = async () => {
+  const handleGenerateOutline = async (requirements?: string) => {
     // Clear existing outline before generating new one
     setOutline('');
     // Reset the chat messages completely
     setOutlineMessagesInternal([]);
 
+    const req = requirements || additionalRequirements;
     await appendOutline({
       content: `请根据以下信息生成一个详细的文章大纲：
 主题：${articleConfig.topic}
@@ -141,7 +142,8 @@ export function useArticleService() {
 核心思路：${articleConfig.coreIdeas}
 字数：${articleConfig.wordCount}
 目标受众：${JSON.stringify(articleConfig.targetAudience)}
-${articleConfig.exampleArticle ? `参考文章：${articleConfig.exampleArticle}` : ''}`,
+${articleConfig.exampleArticle ? `参考文章：${articleConfig.exampleArticle}` : ''}
+${req ? `额外要求：${req}` : ''}`,
       role: 'user',
     });
   }
