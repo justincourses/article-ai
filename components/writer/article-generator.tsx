@@ -8,7 +8,7 @@ import { RequirementsDialog } from './dialog/requirements-dialog'
 
 export function ArticleGenerator() {
   return (
-    <div className="container mx-auto p-4">
+    <div className="mx-auto p-4">
       <div className="flex h-[calc(100vh-200px)]">
         <div className="w-5/12 pr-4 overflow-y-auto">
           <ConfigPanel />
