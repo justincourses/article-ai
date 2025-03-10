@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import Script from "next/script";
 import { Metadata } from "next";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://article.zhaikr.com/"),
@@ -68,6 +69,7 @@ export default function RootLayout({
       >
         <body className={`min-h-screen flex flex-col antialiased`}>
           {children}
+          <Toaster richColors />
         </body>
       </ClerkProvider>
 

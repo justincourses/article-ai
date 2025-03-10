@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Message } from 'ai'
@@ -9,6 +9,21 @@ import { throttle } from 'lodash'
 import { useContentStore } from '@/store/writer/content-store'
 import { CONTENT_TABS } from '@/constants/writer'
 import { SummaryImage } from './SummaryImage'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { HexColorPicker } from "react-colorful"
+import { themeOptions, themeMap } from '@/themes'
+import ClipboardJS from 'clipboard'
+import { toast } from "sonner"
 
 interface ReasoningDisplayProps {
   content: string
@@ -64,14 +79,111 @@ interface EditableContentProps {
 export function EditableContent({ messages, onChange, isLoading }: EditableContentProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [renderedContent, setRenderedContent] = useState('')
-  const [isCopied, setIsCopied] = useState(false)
-  const [isDomCopied, setIsDomCopied] = useState(false)
-  const [isReasoningCopied, setIsReasoningCopied] = useState(false)
   const [showReasoning, setShowReasoning] = useState(false)
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('article-theme');
+      return savedTheme || 'prose';
+    }
+    return 'prose';
+  })
   const { activeContentTab } = useContentStore()
   const [wordCount, setWordCount] = useState(0)
   const reasoningSetRef = useRef(false)
   const contentRef = useRef<HTMLDivElement>(null)
+  const copyDivRef = useRef<HTMLDivElement>(null)
+  const [primaryColor, setPrimaryColor] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('article-primary-color') || '#000000';
+    }
+    return '#000000';
+  });
+
+  // Apply the selected theme to the preview-content div
+  const getThemeStyles = useMemo(() => {
+    // If theme is prose, return empty styles to use original prose
+    if (theme === 'prose') {
+      return {};
+    }
+
+    const selectedTheme = themeMap[theme as keyof typeof themeMap];
+    // Convert kebab-case to camelCase for React inline styles
+    const convertedStyles = Object.entries(selectedTheme.base).reduce((acc, [key, value]) => {
+      // Handle CSS custom properties (variables) that start with '--'
+      if (key.startsWith('--')) {
+        if (key === '--md-primary-color') {
+          acc[key] = primaryColor; // Use selected color instead of theme default
+        } else {
+          acc[key] = value;
+        }
+      } else {
+        // Convert regular kebab-case to camelCase
+        const camelCaseKey = key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        acc[camelCaseKey] = value;
+      }
+      return acc;
+    }, {} as Record<string, string>);
+
+    return convertedStyles as React.CSSProperties;
+  }, [theme, primaryColor]);
+
+  // Apply block styles to elements inside the preview-content div
+  useEffect(() => {
+    if (contentRef.current) {
+      // If theme is prose, reset all styles except primary color
+      if (theme === 'prose') {
+        const elements = contentRef.current.querySelectorAll('*');
+        elements.forEach((element) => {
+          (element as HTMLElement).removeAttribute('style');
+        });
+        // Still apply the primary color
+        document.documentElement.style.setProperty('--md-primary-color', primaryColor);
+        return;
+      }
+
+      const selectedTheme = themeMap[theme as keyof typeof themeMap];
+      const blockStyles = selectedTheme.block;
+
+      // Helper function to convert kebab-case to camelCase
+      const toCamelCase = (str: string) => {
+        // Keep CSS variables as is
+        if (str.startsWith('--')) {
+          return str;
+        }
+        return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+      };
+
+      // Always set the primary color
+      document.documentElement.style.setProperty('--md-primary-color', primaryColor);
+
+      // Apply styles to block elements
+      Object.entries(blockStyles).forEach(([selector, styles]) => {
+        if (selector === 'container') return; // Skip container styles
+
+        const elements = contentRef.current?.querySelectorAll(selector);
+        elements?.forEach((element) => {
+          Object.entries(styles as Record<string, string>).forEach(([property, value]) => {
+            // Convert kebab-case property to camelCase
+            const camelCaseProperty = toCamelCase(property);
+            (element as HTMLElement).style[camelCaseProperty as any] = value;
+          });
+        });
+      });
+
+      // Apply styles to inline elements
+      const inlineStyles = selectedTheme.inline;
+      Object.entries(inlineStyles).forEach(([selector, styles]) => {
+        const elements = contentRef.current?.querySelectorAll(selector);
+        elements?.forEach((element) => {
+          Object.entries(styles as Record<string, string>).forEach(([property, value]) => {
+            // Convert kebab-case property to camelCase
+            const camelCaseProperty = toCamelCase(property);
+            (element as HTMLElement).style[camelCaseProperty as any] = value;
+          });
+        });
+      });
+    }
+  }, [theme, primaryColor]);
 
   // 处理消息内容，分离推理和正文
   const processMessageContent = (message: Message | undefined) => {
@@ -297,6 +409,293 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
     }
   }, [content]);
 
+  // Save theme to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('article-theme', theme);
+    }
+  }, [theme]);
+
+  // Save color to localStorage and update CSS variable
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('article-primary-color', primaryColor);
+      // Don't set CSS variable here anymore, it's handled in the theme effect
+    }
+  }, [primaryColor]);
+
+  // 应用主题到预览内容的函数
+  const applyThemeToPreview = useCallback(() => {
+    if (!contentRef.current) return;
+
+    // 清除之前的样式
+    const clearStyles = (element: HTMLElement) => {
+      element.removeAttribute('style');
+      Array.from(element.children).forEach(child => {
+        clearStyles(child as HTMLElement);
+      });
+    };
+
+    clearStyles(contentRef.current);
+
+    if (theme === 'prose') {
+      // 仍然保持主色调
+      document.documentElement.style.setProperty('--md-primary-color', primaryColor);
+      return;
+    }
+
+    const selectedTheme = themeMap[theme as keyof typeof themeMap];
+
+    // 应用基础样式
+    Object.entries(selectedTheme.base).forEach(([key, value]) => {
+      if (key.startsWith('--')) {
+        if (key === '--md-primary-color') {
+          contentRef.current?.style.setProperty(key, primaryColor);
+        } else {
+          contentRef.current?.style.setProperty(key, value as string);
+        }
+      } else {
+        contentRef.current?.style.setProperty(key, value as string);
+      }
+    });
+
+    // 应用块级元素样式
+    Object.entries(selectedTheme.block).forEach(([selector, styles]) => {
+      if (selector === 'container') return;
+      const elements = contentRef.current?.querySelectorAll(selector);
+      elements?.forEach((element) => {
+        Object.entries(styles as Record<string, string>).forEach(([prop, val]) => {
+          (element as HTMLElement).style.setProperty(prop, val);
+        });
+      });
+    });
+
+    // 应用内联元素样式
+    Object.entries(selectedTheme.inline).forEach(([selector, styles]) => {
+      const elements = contentRef.current?.querySelectorAll(selector);
+      elements?.forEach((element) => {
+        Object.entries(styles as Record<string, string>).forEach(([prop, val]) => {
+          (element as HTMLElement).style.setProperty(prop, val);
+        });
+      });
+    });
+  }, [theme, primaryColor]);
+
+  // 更新主题效果应用逻辑
+  useEffect(() => {
+    applyThemeToPreview();
+  }, [theme, primaryColor, applyThemeToPreview]);
+
+  // 准备用于复制的内容
+  const prepareCopyContent = () => {
+    if (!contentRef.current || !copyDivRef.current) return;
+
+    // 1. 记录当前主题状态
+    const originalTheme = theme;
+    const originalColor = primaryColor;
+
+    try {
+      const selectedTheme = theme !== 'prose' ? themeMap[theme as keyof typeof themeMap] : null;
+      const copyDiv = copyDivRef.current;
+
+      // 2. 复制内容
+      copyDiv.innerHTML = contentRef.current.innerHTML;
+
+      // 应用主题样式到复制 div
+      if (selectedTheme) {
+        // 应用基础样式
+        Object.entries(selectedTheme.base).forEach(([key, value]) => {
+          if (key.startsWith('--')) {
+            if (key === '--md-primary-color') {
+              copyDiv.style.setProperty(key, primaryColor);
+            } else {
+              copyDiv.style.setProperty(key, value as string);
+            }
+          } else {
+            copyDiv.style.setProperty(key, value as string);
+          }
+        });
+
+        // 应用块级元素样式
+        Object.entries(selectedTheme.block).forEach(([selector, styles]) => {
+          if (selector === 'container') return;
+          const elements = copyDiv.querySelectorAll(selector);
+          elements.forEach((element) => {
+            Object.entries(styles as Record<string, string>).forEach(([prop, val]) => {
+              (element as HTMLElement).style.setProperty(prop, val);
+            });
+          });
+        });
+
+        // 应用内联元素样式
+        Object.entries(selectedTheme.inline).forEach(([selector, styles]) => {
+          const elements = copyDiv.querySelectorAll(selector);
+          elements.forEach((element) => {
+            Object.entries(styles as Record<string, string>).forEach(([prop, val]) => {
+              (element as HTMLElement).style.setProperty(prop, val);
+            });
+          });
+        });
+      }
+
+      // 递归获取计算样式并内联到元素
+      const applyComputedStylesToElement = (element: HTMLElement) => {
+        const computedStyle = window.getComputedStyle(element);
+        const importantStyles = [
+          'color', 'background-color', 'font-size', 'font-family', 'font-weight',
+          'line-height', 'text-align', 'margin', 'padding', 'border', 'display',
+          'width', 'height', 'text-decoration', 'font-style', 'letter-spacing',
+          'text-indent', 'white-space', 'word-spacing', 'word-break', 'overflow-wrap'
+        ];
+
+        importantStyles.forEach(style => {
+          const value = computedStyle.getPropertyValue(style);
+          if (value && value !== 'none' && value !== 'normal' && value !== '0px') {
+            element.style.setProperty(style, value);
+          }
+        });
+
+        Array.from(element.children).forEach(child => {
+          applyComputedStylesToElement(child as HTMLElement);
+        });
+      };
+
+      // 应用计算样式
+      applyComputedStylesToElement(copyDiv);
+
+      return {
+        originalTheme,
+        originalColor,
+        success: true
+      };
+    } catch (error) {
+      console.error('Error preparing content:', error);
+      return {
+        originalTheme,
+        originalColor,
+        success: false
+      };
+    }
+  };
+
+  // 复制公众号格式内容的函数
+  const copyWeChatFormat = async () => {
+    if (!copyDivRef.current) return;
+
+    // 1. 准备内容并获取原始主题信息
+    const prepareResult = prepareCopyContent();
+    if (!prepareResult) return;
+
+    const { originalTheme, originalColor, success } = prepareResult;
+    if (!success) return;
+
+    let copySuccess = false;
+
+    try {
+      // 2. 执行复制操作
+      if (navigator.clipboard && navigator.clipboard.write) {
+        const htmlBlob = new Blob([copyDivRef.current.innerHTML], { type: 'text/html' });
+        const textBlob = new Blob([copyDivRef.current.textContent || ''], { type: 'text/plain' });
+
+        const clipboardItem = new ClipboardItem({
+          'text/html': htmlBlob,
+          'text/plain': textBlob
+        });
+
+        await navigator.clipboard.write([clipboardItem]);
+        copySuccess = true;
+      } else {
+        // 降级方案：使用传统的 execCommand
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(copyDivRef.current);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        copySuccess = document.execCommand('copy');
+        selection?.removeAllRanges();
+      }
+
+      if (copySuccess) {
+        toast.success("已复制公众号格式内容");
+      }
+    } catch (error) {
+      console.error('Failed to copy formatted content:', error);
+      toast.error("复制失败，请重试");
+      copySuccess = false;
+    }
+
+    // 3. 如果复制成功，等待一小段时间后再还原主题，以确保复制内容已经被正确处理
+    if (copySuccess) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    // 4. 还原原始主题并重新应用
+    if (theme !== originalTheme) {
+      setTheme(originalTheme);
+    }
+    if (primaryColor !== originalColor) {
+      setPrimaryColor(originalColor);
+    }
+
+    // 确保主题立即重新应用
+    requestAnimationFrame(() => {
+      applyThemeToPreview();
+    });
+  };
+
+  // 更新 clipboard.js 的成功回调处理
+  useEffect(() => {
+    const clipboard = new ClipboardJS('.clipboard-text-btn', {
+      text: function(trigger: Element) {
+        return content;
+      }
+    });
+
+    const reasoningClipboard = new ClipboardJS('.clipboard-reasoning-btn', {
+      text: function(trigger: Element) {
+        return reasoning;
+      }
+    });
+
+    clipboard.on('success', function(e: { clearSelection: () => void }) {
+      toast.success("已复制纯文本内容");
+      e.clearSelection();
+    });
+
+    reasoningClipboard.on('success', function(e: { clearSelection: () => void }) {
+      toast.success("已复制推理内容");
+      e.clearSelection();
+    });
+
+    clipboard.on('error', function(e: any) {
+      console.error('Failed to copy text: ', e);
+      toast.error("复制失败，请重试");
+    });
+
+    reasoningClipboard.on('error', function(e: any) {
+      console.error('Failed to copy reasoning: ', e);
+      toast.error("复制失败，请重试");
+    });
+
+    return () => {
+      clipboard.destroy();
+      reasoningClipboard.destroy();
+    }
+  }, [content, reasoning]);
+
+  // 添加一个 effect 来处理主题的持久化
+  useEffect(() => {
+    const handleThemeChange = () => {
+      applyThemeToPreview();
+    };
+
+    // 监听主题相关的状态变化
+    window.addEventListener('storage', handleThemeChange);
+    return () => {
+      window.removeEventListener('storage', handleThemeChange);
+    };
+  }, [applyThemeToPreview]);
+
   if (isLoading && messages.length === 0) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-16rem)] min-h-[564px]">
@@ -307,6 +706,12 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
 
   return (
     <div className="editable-content-container relative flex flex-col h-[calc(100vh-15.5rem)]">
+      {/* 添加隐藏的复制 div */}
+      <div
+        ref={copyDivRef}
+        className="hidden"
+        aria-hidden="true"
+      />
       <div className="flex-1 overflow-auto">
         {isEditing && !isLoading ? (
           <Textarea
@@ -352,9 +757,10 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
                         )}
                         <div
                           ref={index === messages.length - 1 ? contentRef : undefined}
-                          className={`prose prose-sm max-w-none ${
+                          className={`preview-content prose prose-sm max-w-none ${
                             index < messages.length - 1 ? "opacity-50 mb-4" : ""
                           }`}
+                          style={index === messages.length - 1 ? getThemeStyles : {}}
                           dangerouslySetInnerHTML={{
                             __html:
                               index === messages.length - 1
@@ -390,70 +796,100 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
       {!isLoading && content && (
         <div className="editable-action-bar border-t border-gray-200 bg-gray-50 p-2 flex justify-between items-center mt-auto">
           <div className="text-sm text-gray-500 flex items-center">
-            <span className="mr-1">📊</span>
+            <span className="mr-1">📝</span>
             <span>字数: {wordCount}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1"
-              onClick={() => {
-                navigator.clipboard.writeText(content);
-                setIsCopied(true);
-                setTimeout(() => setIsCopied(false), 2000);
-              }}
-            >
-              <span>{isCopied ? "✅" : "📋"}</span>
-              <span>{isCopied ? "已复制" : "复制纯文本"}</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1"
-              onClick={() => {
-                if (contentRef.current) {
-                  try {
-                    // Create a range and selection
-                    const range = document.createRange();
-                    range.selectNodeContents(contentRef.current);
-                    const selection = window.getSelection();
-                    if (selection) {
-                      // Clear any current selection
-                      selection.removeAllRanges();
-                      // Select the content
-                      selection.addRange(range);
-                      // Execute copy command (still widely supported for HTML content)
-                      document.execCommand('copy');
-                      // Deselect
-                      selection.removeAllRanges();
-                    }
-                    setIsDomCopied(true);
-                    setTimeout(() => setIsDomCopied(false), 2000);
-                  } catch (err) {
-                    console.error('Failed to copy rich text content:', err);
-                  }
-                }
-              }}
-            >
-              <span>{isDomCopied ? "✅" : "📄"}</span>
-              <span>{isDomCopied ? "已复制" : "复制内容"}</span>
-            </Button>
-            {hasReasoning && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-1"
-                onClick={() => {
-                  navigator.clipboard.writeText(reasoning);
-                  setIsReasoningCopied(true);
-                  setTimeout(() => setIsReasoningCopied(false), 2000);
-                }}
-              >
-                <span>{isReasoningCopied ? "✅" : "🧠"}</span>
-                <span>{isReasoningCopied ? "已复制" : "复制推理"}</span>
-              </Button>
-            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <span>🎨</span>
+                  <span>主题</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  key="prose"
+                  onClick={() => setTheme('prose')}
+                  className={theme === 'prose' ? "bg-accent" : ""}
+                >
+                  Prose
+                </DropdownMenuItem>
+                {themeOptions.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => setTheme(option.value)}
+                    className={theme === option.value ? "bg-accent" : ""}
+                  >
+                    {option.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1 w-[85px]"
+                  style={{
+                    borderBottom: `3px solid ${primaryColor}`
+                  }}
+                >
+                  <span>🎏</span>
+                  <span>配色</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-3">
+                <HexColorPicker color={primaryColor} onChange={setPrimaryColor} />
+              </PopoverContent>
+            </Popover>
+            <DropdownMenu>
+              <div className="relative flex">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1 rounded-r-none border-r-0"
+                  onClick={copyWeChatFormat}
+                >
+                  <span>📋</span>
+                  <span>复制公众号格式</span>
+                </Button>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="px-2 rounded-l-none border-l-[1px] border-l-border"
+                  >
+                    <span>▼</span>
+                  </Button>
+                </DropdownMenuTrigger>
+              </div>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={copyWeChatFormat}
+                >
+                  <span className="mr-2">📋</span>
+                  <span>复制公众号格式</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="clipboard-text-btn"
+                  data-clipboard-action="copy"
+                >
+                  <span className="mr-2">📝</span>
+                  <span>复制纯文本</span>
+                </DropdownMenuItem>
+                {hasReasoning && (
+                  <DropdownMenuItem
+                    className="clipboard-reasoning-btn"
+                    data-clipboard-action="copy"
+                  >
+                    <span className="mr-2">🧠</span>
+                    <span>复制推理</span>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button
               variant="outline"
               size="sm"
@@ -463,19 +899,6 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
               <span>{isEditing ? "👁️" : "✏️"}</span>
               <span>{isEditing ? "预览" : "编辑"}</span>
             </Button>
-            {/* <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1"
-              disabled={!hasReasoning || isEditing}
-              onClick={() => {
-                setShowReasoning(!showReasoning);
-                // 当手动切换时，不要重置 reasoningSetRef，这样 useEffect 就不会再次触发
-              }}
-            >
-              <span>🧠</span>
-              <span>思考过程</span>
-            </Button> */}
           </div>
         </div>
       )}
