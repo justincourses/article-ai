@@ -72,7 +72,7 @@ export function BasicConfigTab() {
           placeholder="描述您文章的核心思路和要点"
           value={articleConfig.coreIdeas}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setArticleConfig({ ...articleConfig, coreIdeas: e.target.value })}
-          className="min-h-[260px]"
+          className="min-h-[120px]"
         />
       </div>
     </div>

@@ -13,11 +13,12 @@ export function ActionButtons() {
   const {
     outline,
     article,
+    summary,
     activeContentTab,
     setActiveContentTab
   } = useContentStore()
 
-  const { setIsDialogOpen } = useUIStore()
+  const { setIsDialogOpen, setDialogType } = useUIStore()
   const { articleConfig } = useWriterConfig()
 
   const {
@@ -40,6 +41,7 @@ export function ActionButtons() {
 
   const handleOutlineGeneration = () => {
     if (!articleConfig.topic || !articleConfig.style || !articleConfig.wordCount || !articleConfig.coreIdeas) {
+      setDialogType('outline')
       setIsDialogOpen(true)
       return
     }
@@ -52,7 +54,8 @@ export function ActionButtons() {
       handleOutlineGeneration()
       return
     }
-    handleGenerateArticle()
+    setDialogType('article')
+    setIsDialogOpen(true)
     setActiveContentTab(CONTENT_TABS.ARTICLE)
   }
 
@@ -65,30 +68,46 @@ export function ActionButtons() {
     setActiveContentTab(CONTENT_TABS.SUMMARY)
   }
 
+  const isOutlineButtonDisabled = isGeneratingOutline || !articleConfig.topic || !articleConfig.style || !articleConfig.wordCount || !articleConfig.coreIdeas
+
   return (
-    <div className="flex flex-col gap-2 md:flex-row md:gap-4">
+    <div className="flex flex-col gap-2 flex-wrap lg:flex-row lg:gap-1 mt-12 border-t pt-4">
       <Button
         onClick={handleOutlineGeneration}
-        disabled={isGeneratingOutline}
+        disabled={isOutlineButtonDisabled}
+        size="sm"
         className="w-auto px-4 bg-blue-500 hover:bg-blue-400 transition-colors text-white rounded-md"
       >
-        {isGeneratingOutline ? '✨ 生成大纲中...' : '✨ 生成大纲'}
+        {isGeneratingOutline
+          ? "✨ 生成大纲中..."
+          : outline
+            ? "✨ 再次生成大纲"
+            : "✨ 生成大纲"}
       </Button>
       <Button
         onClick={handleArticleGeneration}
-        disabled={isGeneratingArticle}
+        disabled={isGeneratingArticle || !outline}
+        size="sm"
         className="w-auto px-4 bg-purple-500 hover:bg-purple-400 transition-colors text-white rounded-md"
       >
-        {isGeneratingArticle ? '🔮 生成文章中...' : '🔮 生成文章'}
+        {isGeneratingArticle
+          ? "🔮 生成文章中..."
+          : article
+            ? "🔮 再次生成文章"
+            : "🔮 生成文章"}
       </Button>
       <Button
         onClick={handleSummaryGeneration}
-        disabled={isGeneratingSummary}
+        disabled={isGeneratingSummary || !article}
+        size="sm"
         className="w-auto px-4 bg-teal-600 hover:bg-teal-500 transition-colors text-white rounded-md"
       >
-        {isGeneratingSummary ? '⚡ 生成摘要中...' : '⚡ 生成摘要'}
+        {isGeneratingSummary
+          ? "⚡ 生成摘要中..."
+          : summary
+            ? "⚡ 再次生成摘要"
+            : "⚡ 生成摘要"}
       </Button>
-
       <Button
         variant="ghost"
         size="icon"
@@ -96,8 +115,8 @@ export function ActionButtons() {
         className="ml-auto"
         title="重置所有配置"
       >
-        <Eraser className="h-5 w-5 text-gray-500 hover:text-red-500" />
+        <Eraser className="h-4 w-4 text-gray-500 hover:text-red-500" />
       </Button>
     </div>
-  )
+  );
 }
