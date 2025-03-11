@@ -36,6 +36,7 @@ export function useArticleService() {
     body: {
       time: new Date().toISOString(),
       topic: articleConfig.topic,
+      articleType: articleConfig.articleType,
       style: articleConfig.style,
       coreIdeas: articleConfig.coreIdeas,
       wordCount: articleConfig.wordCount,
@@ -60,10 +61,15 @@ export function useArticleService() {
     body: {
       time: new Date().toISOString(),
       topic: articleConfig.topic,
+      articleType: articleConfig.articleType,
       style: articleConfig.style,
       coreIdeas: articleConfig.coreIdeas,
       outline: outline,
-      wordCount: articleConfig.wordCount
+      wordCount: articleConfig.wordCount,
+      targetAudience: articleConfig.targetAudience,
+      writerPersona: articleConfig.writerPersona,
+      reviewerInfo: articleConfig.reviewerInfo,
+      model: articleConfig.model
     },
     onFinish: (message) => {
       setArticle(message.content);
@@ -138,6 +144,7 @@ export function useArticleService() {
     await appendOutline({
       content: `请根据以下信息生成一个详细的文章大纲：
 主题：${articleConfig.topic}
+文章类型：${articleConfig.articleType}
 风格：${articleConfig.style}
 核心思路：${articleConfig.coreIdeas}
 字数：${articleConfig.wordCount}
@@ -157,6 +164,9 @@ ${req ? `额外要求：${req}` : ''}`,
     const req = requirements || additionalRequirements;
     await appendArticle({
       content: `请根据以下大纲生成一篇完整的文章：
+主题：${articleConfig.topic}
+文章类型：${articleConfig.articleType}
+风格：${articleConfig.style}
 ${outline}
 ${req ? `额外要求：${req}` : ''}`,
       role: 'user',

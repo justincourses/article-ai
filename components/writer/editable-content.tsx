@@ -368,6 +368,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
     []
   )
 
+  // Effect for rendering markdown when content changes
   useEffect(() => {
     if (!isEditing) {
       // 只有当 content 真正变化时才调用渲染函数
@@ -489,6 +490,17 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
   useEffect(() => {
     applyThemeToPreview();
   }, [theme, primaryColor, applyThemeToPreview]);
+
+  // 当内容渲染完毕后，自动应用主题
+  useEffect(() => {
+    // 只在加载完成且有消息内容时应用主题
+    if (!isLoading && messages.length > 0) {
+      // 内容完全渲染完毕后，应用主题
+      setTimeout(() => {
+        applyThemeToPreview();
+      }, 100);
+    }
+  }, [isLoading, messages.length, applyThemeToPreview]);
 
   // 准备用于复制的内容
   const prepareCopyContent = () => {
@@ -662,7 +674,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
     });
 
     clipboard.on('success', function(e: { clearSelection: () => void }) {
-      toast.success("已复制纯文本内容");
+      toast.success("已复制 Markdown 内容");
       e.clearSelection();
     });
 
@@ -881,7 +893,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
                   data-clipboard-action="copy"
                 >
                   <span className="mr-2">📝</span>
-                  <span>复制纯文本</span>
+                  <span>复制 Markdown 内容</span>
                 </DropdownMenuItem>
                 {hasReasoning && (
                   <DropdownMenuItem
