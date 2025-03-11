@@ -1,8 +1,8 @@
 import { ArticleConfig } from '@/store/writer/config';
-import { commonLengthRequirements, timeReference, naturalWritingReview } from '../../common';
+import { commonLengthRequirements, timeReference, naturalWritingReview } from '../../common/index';
 
-// Base prompt for video scripts
-const basePrompt = `请根据以下信息，生成一份视频脚本：
+// Base prompt for video script articles
+const basePrompt = `作为一位资深编剧和小说家，请根据以下信息，生成一个视频脚本：
 
 主题：{topic}
 
@@ -14,36 +14,40 @@ const basePrompt = `请根据以下信息，生成一份视频脚本：
 要求：
 {requirements}
 
-视频类型：{style}
+脚本风格：{style}
 
 大纲：
 {outline}`;
 
 // Style-specific requirements
 const styleRequirements = {
-  educational: `脚本应该清晰地解释概念和知识点。
-使用简单易懂的语言，避免过多专业术语。
-适当使用类比和例子帮助理解。
-结构应该循序渐进，由浅入深。
-考虑视觉辅助元素，如图表、动画等。`,
+  educational: `脚本应该注重知识传递和清晰解释。
+使用简明易懂的语言解释复杂概念。
+适当使用例子和比喻增强理解。
+保持逻辑性和结构化，便于观众学习和记忆。
+语言要流畅自然，符合教学视频的语言习惯。
+使用大小标题+正文自然段的形式组织内容，确保脚本结构清晰有序。`,
 
-  entertainment: `脚本应该有趣、生动，能够吸引观众注意力。
-使用幽默、故事或戏剧性元素增强娱乐性。
-节奏应该紧凑，避免冗长。
-考虑观众互动和情感共鸣。
-适当使用悬念和高潮。`,
+  entertainment: `脚本应该富有趣味性和娱乐性。
+使用幽默、故事和有趣的例子吸引观众。
+保持轻松活泼的语调，创造愉快的观看体验。
+注重节奏感和互动性，保持观众的兴趣。
+语言要流畅自然，符合娱乐视频的语言习惯。
+使用大小标题+正文自然段的形式组织内容，确保脚本节奏感强、引人入胜。`,
 
-  promotional: `脚本应该突出产品或服务的价值和优势。
-使用有说服力的语言和吸引人的表述。
-清晰传达核心卖点和行动号召。
-考虑目标受众的需求和痛点。
-保持简洁明了，避免过度营销。`,
+  promotional: `脚本应该具有说服力和吸引力。
+突出产品或服务的独特卖点和优势。
+使用有力的号召性用语和情感诉求。
+注重解决观众的问题和需求，引导他们采取行动。
+语言要流畅自然，富有说服力和感染力。
+使用大小标题+正文自然段的形式组织内容，确保脚本能够有效传达营销信息。`,
 
-  documentary: `脚本应该客观、真实，注重事实和细节。
-使用叙事手法展现主题的深度和广度。
-平衡信息传递和情感共鸣。
-考虑采访、旁白和实景拍摄的结合。
-保持一定的权威性和可信度。`,
+  documentary: `脚本应该客观、深入地探讨主题。
+使用事实、数据和专家观点支持内容。
+注重叙事性和情感深度，创造沉浸式体验。
+保持平衡的视角，呈现多方面的信息。
+语言要流畅自然，符合纪录片的语言习惯。
+使用大小标题+正文自然段的形式组织内容，确保脚本能够深入浅出地讲述故事。`,
 };
 
 // Function to generate prompt based on style
@@ -51,7 +55,7 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
   const { topic, coreIdeas, wordCount } = config;
 
   // Get the appropriate requirements based on style
-  const requirements = styleRequirements[style as keyof typeof styleRequirements];
+  const requirements = styleRequirements[style as keyof typeof styleRequirements] || styleRequirements.educational;
 
   // Get the appropriate length requirements
   const lengthReq = commonLengthRequirements[wordCount as keyof typeof commonLengthRequirements] || commonLengthRequirements.medium;
@@ -71,12 +75,12 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
 请在生成视频脚本前，确认以下几点：
 1. 脚本内容是否完全符合主题和核心思路
 2. 脚本是否包含了所有必要的内容要点
-3. 脚本结构是否适合视频呈现
-4. 脚本长度是否符合要求
-5. 语言是否生动、有吸引力，符合视频风格
-6. 是否使用了正确的脚本格式（场景描述、对白、旁白等）
-7. 是否考虑了视觉元素和音效
-8. 是否包含了开场和结尾
+3. 脚本结构是否合理，是否有吸引人的开场和有力的结尾
+4. 脚本篇幅是否符合要求
+5. 语言是否生动有趣，符合视频媒体的特点
+6. 是否使用了正确的 Markdown 格式
+7. 是否满足了所有补充要求
+8. 脚本是否考虑了视觉和听觉元素的配合
 9. 涉及时间相关内容时，是否参考了提供的时间信息
 
 ${naturalWritingReview}

@@ -1,8 +1,8 @@
 import { ArticleConfig } from '@/store/writer/config';
-import { commonLengthRequirements, timeReference, naturalWritingReview } from '../../common';
+import { commonLengthRequirements, timeReference, naturalWritingReview } from '../../common/index';
 
 // Base prompt for speech articles
-const basePrompt = `请根据以下信息，生成一篇演讲稿：
+const basePrompt = `作为一位世界五百强企业的首席演讲稿撰稿人，请根据以下信息，生成一篇演讲稿：
 
 主题：{topic}
 
@@ -21,25 +21,29 @@ const basePrompt = `请根据以下信息，生成一篇演讲稿：
 
 // Style-specific requirements
 const styleRequirements = {
-  motivational: `演讲应该充满激励性和鼓舞性。
-使用富有感染力的语言和生动的例子。
-建立情感共鸣，激发听众的积极性和行动力。
-适当使用修辞手法，如排比、反问等增强演讲效果。`,
+  motivational: `演讲应该富有激励性和鼓舞性。
+使用振奋人心的语言和积极向上的态度。
+分享成功故事和经验，激发听众的热情和行动力。
+语言要流畅自然，充满激情和感染力。
+使用大小标题+正文自然段的形式组织内容，确保演讲能够引起共鸣和情感波动。`,
 
-  ceremonial: `演讲应该庄重、典雅，符合仪式感。
-使用得体的祝福语和礼貌用语。
-突出场合的特殊意义和重要性。
-保持适度的情感表达，不过分热烈也不过分冷淡。`,
+  ceremonial: `演讲应该庄重、正式，适合庆典和仪式场合。
+使用优雅、得体的语言，表达敬意和祝福。
+注重场合的特殊意义和传统，传递积极的情感和价值观。
+语言要流畅自然，符合正式场合的语言习惯。
+使用大小标题+正文自然段的形式组织内容，确保演讲结构庄重有序。`,
 
-  informative: `演讲应该清晰、准确地传递信息。
-使用易于理解的语言解释复杂概念。
-适当使用数据和事实支持观点。
-保持逻辑性和条理性，便于听众理解和记忆。`,
+  informative: `演讲应该注重信息传递和知识分享。
+使用清晰、准确的语言解释复杂概念。
+提供有价值的信息和见解，帮助听众理解和学习。
+语言要流畅自然，符合教育性演讲的语言习惯。
+使用大小标题+正文自然段的形式组织内容，确保信息传递清晰有序。`,
 
-  persuasive_speech: `演讲应该具有强烈的说服力。
-使用有力的论据和具体的例子。
-预设并回应可能的质疑。
-循序渐进地引导听众接受观点。`,
+  persuasive_speech: `演讲应该具有强烈的说服力和感染力。
+使用有力的论据、生动的例子和情感化的表达。
+注重演讲的节奏感和高潮设计，引导听众接受观点。
+语言要流畅自然，富有说服力和感染力。
+使用大小标题+正文自然段的形式组织内容，确保演讲结构能够层层递进。`,
 };
 
 // Function to generate prompt based on style
@@ -47,7 +51,7 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
   const { topic, coreIdeas, wordCount } = config;
 
   // Get the appropriate requirements based on style
-  const requirements = styleRequirements[style as keyof typeof styleRequirements];
+  const requirements = styleRequirements[style as keyof typeof styleRequirements] || styleRequirements.motivational;
 
   // Get the appropriate length requirements
   const lengthReq = commonLengthRequirements[wordCount as keyof typeof commonLengthRequirements] || commonLengthRequirements.medium;
@@ -69,10 +73,10 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
 2. 演讲是否包含了所有必要的内容要点
 3. 演讲结构是否合理，是否有清晰的开场、主体和结尾
 4. 演讲篇幅是否符合要求
-5. 语言是否生动有力，符合指定的演讲风格
+5. 语言是否流畅自然，符合指定的风格和说话节奏
 6. 是否使用了正确的 Markdown 格式
-7. 是否考虑了听众的反应和互动
-8. 是否包含了适当的停顿和语气变化的提示
+7. 是否满足了所有补充要求
+8. 演讲是否具有适当的互动性和感染力
 9. 涉及时间相关内容时，是否参考了提供的时间信息
 
 ${naturalWritingReview}
