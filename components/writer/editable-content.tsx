@@ -662,7 +662,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
     });
 
     clipboard.on('success', function(e: { clearSelection: () => void }) {
-      toast.success("已复制纯文本内容");
+      toast.success("已复制 Markdown 内容");
       e.clearSelection();
     });
 
@@ -881,7 +881,7 @@ export function EditableContent({ messages, onChange, isLoading }: EditableConte
                   data-clipboard-action="copy"
                 >
                   <span className="mr-2">📝</span>
-                  <span>复制纯文本</span>
+                  <span>复制 Markdown 内容</span>
                 </DropdownMenuItem>
                 {hasReasoning && (
                   <DropdownMenuItem
