@@ -1,5 +1,5 @@
 import { ArticleConfig } from '@/store/writer/config';
-import { commonLengthRequirements, timeReference, naturalWritingReview } from '../../common/index';
+import { commonLengthRequirements, timeReference, naturalWritingReview, determineContentLength, getStyleAdjustmentsByTypeAndLength } from '../../common/index';
 
 // Base prompt for social media articles
 const basePrompt = `作为一位经验丰富的社交媒体内容创作者，请根据以下信息，生成一篇社交媒体文章：
@@ -96,10 +96,16 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
   const { topic, coreIdeas, wordCount } = config;
 
   // Get the appropriate requirements based on style
-  const requirements = styleRequirements[style as keyof typeof styleRequirements] || styleRequirements.casual;
+  const requirements = styleRequirements[style as keyof typeof styleRequirements] || styleRequirements.formal;
+
+  // Determine content length
+  const contentLength = determineContentLength(wordCount);
 
   // Get the appropriate length requirements
   const lengthReq = commonLengthRequirements[wordCount as keyof typeof commonLengthRequirements] || commonLengthRequirements.medium;
+
+  // Get style adjustments based on article type and content length
+  const styleAdjustments = getStyleAdjustmentsByTypeAndLength('social_media', contentLength);
 
   // Create the time reference
   const timeRef = timeReference(new Date().toISOString());
@@ -109,20 +115,21 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
     .replace('{topic}', topic)
     .replace('{coreIdeas}', coreIdeas)
     .replace('{timeRef}', timeRef)
-    .replace('{requirements}', `${requirements}\n\n${lengthReq}`)
+    .replace('{requirements}', `${requirements}\n\n${lengthReq}\n\n${styleAdjustments}`)
     .replace('{style}', style)
     .replace('{outline}', '') + `
 
-请在生成文章前，确认以下几点：
+请在生成社交媒体文章前，确认以下几点：
 1. 文章内容是否完全符合主题和核心思路
 2. 文章是否包含了所有必要的内容要点
-3. 文章结构是否合理，是否根据风格和受众适当调整
+3. 文章结构是否合理，是否有清晰的引言、主体和结论
 4. 文章篇幅是否符合要求
-5. 语言是否流畅自然，符合指定的风格和说话节奏
+5. 语言是否符合指定的社交媒体风格
 6. 是否使用了正确的 Markdown 格式
 7. 是否满足了所有补充要求
-8. ${style === 'formal' ? "文章是否保持了应有的学术严谨性" : "文章是否避免了过于学术化或文档式的结构"}
+8. 文章是否具有足够的吸引力和传播性
 9. 涉及时间相关内容时，是否参考了提供的时间信息
+10. 是否遵循了文章类型和篇幅的风格调整要求
 
 ${naturalWritingReview}
 

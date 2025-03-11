@@ -1,5 +1,5 @@
 import { ArticleConfig } from '@/store/writer/config';
-import { commonLengthRequirements, timeReference, naturalWritingReview } from '../../common/index';
+import { commonLengthRequirements, timeReference, naturalWritingReview, determineContentLength, getStyleAdjustmentsByTypeAndLength } from '../../common/index';
 
 // Base prompt for video script articles
 const basePrompt = `作为一位资深编剧和小说家，请根据以下信息，生成一个视频脚本：
@@ -57,8 +57,14 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
   // Get the appropriate requirements based on style
   const requirements = styleRequirements[style as keyof typeof styleRequirements] || styleRequirements.educational;
 
+  // Determine content length
+  const contentLength = determineContentLength(wordCount);
+
   // Get the appropriate length requirements
   const lengthReq = commonLengthRequirements[wordCount as keyof typeof commonLengthRequirements] || commonLengthRequirements.medium;
+
+  // Get style adjustments based on article type and content length
+  const styleAdjustments = getStyleAdjustmentsByTypeAndLength('video_script', contentLength);
 
   // Create the time reference
   const timeRef = timeReference(new Date().toISOString());
@@ -68,7 +74,7 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
     .replace('{topic}', topic)
     .replace('{coreIdeas}', coreIdeas)
     .replace('{timeRef}', timeRef)
-    .replace('{requirements}', `${requirements}\n\n${lengthReq}`)
+    .replace('{requirements}', `${requirements}\n\n${lengthReq}\n\n${styleAdjustments}`)
     .replace('{style}', style)
     .replace('{outline}', '') + `
 
@@ -82,6 +88,7 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
 7. 是否满足了所有补充要求
 8. 脚本是否考虑了视觉和听觉元素的配合
 9. 涉及时间相关内容时，是否参考了提供的时间信息
+10. 是否遵循了文章类型和篇幅的风格调整要求
 
 ${naturalWritingReview}
 
