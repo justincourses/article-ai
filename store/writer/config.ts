@@ -25,6 +25,7 @@ export interface ArticleParagraph {
 // Define article configuration type
 export interface ArticleConfig {
   topic: string
+  articleType: string
   style: string
   coreIdeas: string
   exampleArticle?: string

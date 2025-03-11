@@ -9,6 +9,7 @@ import { myProvider } from "@/lib/ai/models";
 import { systemPrompt, articlePrompts, determineContentLength, timeReference } from "@/constants/prompts";
 import { auth } from "@clerk/nextjs/server";
 import { DEFAULT_MODELS } from "@/constants/writer/models";
+import { ArticleConfig } from "@/store/writer/config";
 
 // export const maxDuration = 60;
 
@@ -17,14 +18,17 @@ export async function POST(request: Request) {
     id,
     time,
     topic,
+    articleType,
     style,
     coreIdeas,
     outline,
     requirements,
     messages,
-    length = "medium",
-    styleType = "casual",
     wordCount,
+    targetAudience,
+    writerPersona,
+    reviewerInfo,
+    model = DEFAULT_MODELS.ARTICLE,
   } = await request.json();
 
   const { userId } = await auth();
@@ -32,9 +36,6 @@ export async function POST(request: Request) {
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
-
-  // Determine length based on wordCount if provided
-  const contentLength = wordCount ? determineContentLength(wordCount) : length;
 
   // Extract requirements from the message content if not provided directly
   let extractedRequirements = requirements;
@@ -49,17 +50,36 @@ export async function POST(request: Request) {
     }
   }
 
+  // Create an article config object for the prompt
+  const articleConfig: ArticleConfig = {
+    topic: topic || "",
+    articleType: articleType || "social_media",
+    style: style || "",
+    coreIdeas: coreIdeas || "",
+    exampleArticle: "",
+    model: model,
+    wordCount: wordCount || "medium",
+    targetAudience: targetAudience || {
+      ageRange: "",
+      gender: "",
+      incomeLevel: "",
+      interests: [],
+      userTraits: ""
+    },
+    writerPersona: writerPersona || {
+      type: "",
+      style: "",
+      characteristics: ""
+    },
+    reviewerInfo: reviewerInfo || {
+      hasReviewer: false,
+      reviewerType: "",
+      reviewerRequirements: ""
+    }
+  };
+
   // Generate the prompt using the prompt utility
-  const prompt = articlePrompts.getArticlePrompt({
-    time,
-    topic,
-    style,
-    coreIdeas,
-    outline,
-    requirements: extractedRequirements,
-    length: contentLength as "mini" | "short" | "medium" | "long",
-    styleType,
-  });
+  const prompt = articlePrompts.getArticlePrompt(articleConfig);
 
   // Create a message with the prompt
   const promptMessages: Message[] = [
@@ -70,8 +90,8 @@ export async function POST(request: Request) {
     },
   ];
 
-  // Use the article model from constants
-  const modelToUse = DEFAULT_MODELS.ARTICLE;
+  // Use the article model from constants or the one provided
+  const modelToUse = model || DEFAULT_MODELS.ARTICLE;
 
   return createDataStreamResponse({
     execute: (dataStream) => {

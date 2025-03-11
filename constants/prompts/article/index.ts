@@ -3,6 +3,13 @@
  */
 
 import { commonLengthRequirements, timeReference, naturalWritingReview } from '../common';
+import { ArticleConfig } from '@/store/writer/config';
+
+// Import prompts for each article type
+import * as socialMediaPrompts from './social_media';
+import * as speechPrompts from './speech';
+import * as businessPrompts from './business';
+import * as videoScriptPrompts from './video_script';
 
 // Base prompt for article generation
 export const articleBasePrompt = `根据以下要求生成一篇完整的文章：
@@ -68,66 +75,49 @@ export const articleRequirements = {
 // Length-specific requirements for articles
 export const articleLengthRequirements = commonLengthRequirements;
 
-// Function to combine prompts based on requirements
-export const getArticlePrompt = ({
-  time,
-  topic,
-  style,
-  coreIdeas,
-  outline,
-  requirements,
-  length = "medium",
-  styleType = "casual",
-}: {
-  time?: string;
-  topic: string;
-  style: string;
-  coreIdeas: string;
-  outline: string;
-  requirements?: string;
-  length?: "mini" | "short" | "medium" | "long";
-  styleType?: "formal" | "casual" | "creative" | "technical";
-}) => {
-  // Get the appropriate requirements based on style type
-  const styleRequirements = articleRequirements[styleType] || articleRequirements.casual;
+// Type for prompt functions
+type PromptFunction = (config: ArticleConfig) => string;
 
-  // Get the appropriate length requirements
-  const lengthReq = articleLengthRequirements[length] || articleLengthRequirements.medium;
+// Interface for style-specific prompts
+interface StylePrompts {
+  [key: string]: PromptFunction;
+}
 
-  // Combine requirements
-  const combinedRequirements = `${styleRequirements}
+// Interface for article type prompts
+interface ArticleTypePrompts {
+  [key: string]: StylePrompts;
+}
 
-${lengthReq}
-
-${requirements ? `补充要求：
-${requirements}` : ''}`;
-
-  // Create the time reference
-  const timeRef = time ? timeReference(time) : '';
-
-  // Replace placeholders in the base prompt
-  return articleBasePrompt
-    .replace('{topic}', topic)
-    .replace('{coreIdeas}', coreIdeas)
-    .replace('{timeRef}', timeRef)
-    .replace('{requirements}', combinedRequirements)
-    .replace('{style}', style)
-    .replace('{outline}', outline) + `
-
-请在生成文章前，确认以下几点：
-1. 文章内容是否完全符合主题和核心思路
-2. 文章是否包含了所有必要的内容要点
-3. 文章结构是否合理，是否根据风格和受众适当调整
-4. 文章篇幅是否符合要求
-5. 语言是否流畅自然，符合指定的风格和说话节奏
-6. 是否使用了正确的 Markdown 格式
-7. 是否满足了所有补充要求
-8. ${styleType !== "formal" ? "文章是否避免了过于学术化或文档式的结构" : "文章是否保持了应有的学术严谨性"}
-9. 涉及时间相关内容时，是否参考了提供的时间信息
-
-${naturalWritingReview}
-
-如果有任何未满足的要求，请调整文章内容，直到所有要求都得到满足。
-
-直接返回 Markdown 格式的文章内容，不要使用代码块。`;
+// Mapping of article types to their prompts
+const articleTypePrompts: ArticleTypePrompts = {
+  social_media: socialMediaPrompts,
+  speech: speechPrompts,
+  business: businessPrompts,
+  video_script: videoScriptPrompts,
 };
+
+/**
+ * Get the appropriate prompt based on article type and style
+ * @param config The article configuration
+ * @returns The appropriate prompt for the given article type and style
+ */
+export function getArticlePrompt(config: ArticleConfig): string {
+  const { articleType, style } = config;
+
+  // Get prompts for the article type
+  const typePrompts = articleTypePrompts[articleType];
+  if (!typePrompts) {
+    throw new Error(`No prompts found for article type: ${articleType}`);
+  }
+
+  // Get the specific style prompt
+  const stylePrompt = typePrompts[style];
+  if (!stylePrompt) {
+    throw new Error(`No prompt found for style: ${style} in article type: ${articleType}`);
+  }
+
+  return stylePrompt(config);
+}
+
+// Export all prompts for each type
+export { socialMediaPrompts, speechPrompts, businessPrompts, videoScriptPrompts };

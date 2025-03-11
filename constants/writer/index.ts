@@ -13,13 +13,43 @@ export const CONTENT_TABS = {
   SUMMARY: 'summary',
 } as const;
 
-// Dropdown options
-export const STYLE_OPTIONS = [
-  { value: 'formal', label: '正式学术' },
-  { value: 'casual', label: '轻松随意' },
-  { value: 'persuasive', label: '说服力强' },
-  { value: 'descriptive', label: '描述细致' },
-];
+// Article types and their corresponding styles
+export const ARTICLE_TYPES = [
+  { value: 'social_media', label: '社交媒体' },
+  { value: 'speech', label: '演讲稿' },
+  { value: 'business', label: '政商公文' },
+  { value: 'video_script', label: '视频脚本' },
+] as const;
+
+export const STYLE_OPTIONS_BY_TYPE = {
+  social_media: [
+    { value: 'formal', label: '正式学术' },
+    { value: 'casual', label: '轻松随意' },
+    { value: 'persuasive', label: '说服力强' },
+    { value: 'descriptive', label: '描述细致' },
+  ],
+  speech: [
+    { value: 'motivational', label: '激励演讲' },
+    { value: 'ceremonial', label: '庆典致辞' },
+    { value: 'informative', label: '信息传递' },
+    { value: 'persuasive_speech', label: '说服演讲' },
+  ],
+  business: [
+    { value: 'formal_report', label: '正式报告' },
+    { value: 'proposal', label: '提案文书' },
+    { value: 'announcement', label: '公告通知' },
+    { value: 'memo', label: '备忘录' },
+  ],
+  video_script: [
+    { value: 'educational', label: '教育视频' },
+    { value: 'entertainment', label: '娱乐内容' },
+    { value: 'promotional', label: '营销推广' },
+    { value: 'documentary', label: '纪实风格' },
+  ],
+} as const;
+
+// Legacy STYLE_OPTIONS for backward compatibility
+export const STYLE_OPTIONS = STYLE_OPTIONS_BY_TYPE.social_media;
 
 export const WORD_COUNT_OPTIONS = [
   { value: 'mini', label: '迷你 (300字以内)' },

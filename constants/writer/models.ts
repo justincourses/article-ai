@@ -10,6 +10,7 @@ export const DEFAULT_MODELS = {
 // Default article configuration
 export const DEFAULT_ARTICLE_CONFIG = {
   topic: '',
+  articleType: 'social_media',
   style: '',
   coreIdeas: '',
   exampleArticle: '',

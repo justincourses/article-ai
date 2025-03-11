@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useWriterConfig } from '@/store/writer/config'
-import { STYLE_OPTIONS, WORD_COUNT_OPTIONS } from '@/constants/writer'
+import { ARTICLE_TYPES, STYLE_OPTIONS_BY_TYPE, WORD_COUNT_OPTIONS } from '@/constants/writer'
 
 export function BasicConfigTab() {
   const { articleConfig, setArticleConfig } = useWriterConfig()
@@ -26,6 +26,31 @@ export function BasicConfigTab() {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="articleType">
+          文章类型 <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          value={articleConfig.articleType}
+          onValueChange={(value: string) => {
+            setArticleConfig({
+              ...articleConfig,
+              articleType: value,
+              style: '' // Reset style when article type changes
+            })
+          }}
+        >
+          <SelectTrigger id="articleType">
+            <SelectValue placeholder="选择文章类型" />
+          </SelectTrigger>
+          <SelectContent>
+            {ARTICLE_TYPES.map(option => (
+              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="style">
           文章风格 <span className="text-red-500">*</span>
         </Label>
@@ -37,7 +62,9 @@ export function BasicConfigTab() {
             <SelectValue placeholder="选择文章风格" />
           </SelectTrigger>
           <SelectContent>
-            {STYLE_OPTIONS.map(option => (
+            {(articleConfig.articleType && STYLE_OPTIONS_BY_TYPE[articleConfig.articleType as keyof typeof STYLE_OPTIONS_BY_TYPE]
+              ? STYLE_OPTIONS_BY_TYPE[articleConfig.articleType as keyof typeof STYLE_OPTIONS_BY_TYPE]
+              : STYLE_OPTIONS_BY_TYPE.social_media).map(option => (
               <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
             ))}
           </SelectContent>
