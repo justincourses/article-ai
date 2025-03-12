@@ -1,5 +1,6 @@
 import { ArticleConfig } from '@/store/writer/config';
 import { commonLengthRequirements, timeReference, naturalWritingReview, determineContentLength, getStyleAdjustmentsByTypeAndLength } from '../../common/index';
+import { exampleArticleRequirements } from '../index';
 
 // Base prompt for social media articles
 const basePrompt = `作为一位经验丰富的社交媒体内容创作者，请根据以下信息，生成一篇社交媒体文章：
@@ -17,7 +18,13 @@ const basePrompt = `作为一位经验丰富的社交媒体内容创作者，请
 文章风格：{style}
 
 大纲：
-{outline}`;
+{outline}
+
+参考文章：
+{exampleArticle}
+
+结构分析：
+{structureAnalysis}`;
 
 // Style-specific requirements
 const styleRequirements = {
@@ -93,7 +100,7 @@ const styleRequirements = {
 
 // Function to generate prompt based on style
 const getPromptByStyle = (config: ArticleConfig, style: string) => {
-  const { topic, coreIdeas, wordCount } = config;
+  const { topic, coreIdeas, wordCount, exampleArticle, outline, structureAnalysis } = config;
 
   // Get the appropriate requirements based on style
   const requirements = styleRequirements[style as keyof typeof styleRequirements] || styleRequirements.formal;
@@ -110,14 +117,19 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
   // Create the time reference
   const timeRef = timeReference(new Date().toISOString());
 
+  // Add example article requirements if an example is provided
+  const exampleReq = exampleArticle ? exampleArticleRequirements : '';
+
   // Replace placeholders in the base prompt
   return basePrompt
     .replace('{topic}', topic)
     .replace('{coreIdeas}', coreIdeas)
     .replace('{timeRef}', timeRef)
-    .replace('{requirements}', `${requirements}\n\n${lengthReq}\n\n${styleAdjustments}`)
+    .replace('{requirements}', `${requirements}\n\n${lengthReq}\n\n${styleAdjustments}\n\n${exampleReq}`)
     .replace('{style}', style)
-    .replace('{outline}', '') + `
+    .replace('{outline}', outline || '未提供大纲')
+    .replace('{exampleArticle}', exampleArticle || '未提供参考文章')
+    .replace('{structureAnalysis}', structureAnalysis || '未提供结构分析') + `
 
 请在生成社交媒体文章前，确认以下几点：
 1. 文章内容是否完全符合主题和核心思路
@@ -130,6 +142,8 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
 8. 文章是否具有足够的吸引力和传播性
 9. 涉及时间相关内容时，是否参考了提供的时间信息
 10. 是否遵循了文章类型和篇幅的风格调整要求
+11. 是否参考了提供的大纲结构
+12. 是否借鉴了参考文章的优点
 
 ${naturalWritingReview}
 

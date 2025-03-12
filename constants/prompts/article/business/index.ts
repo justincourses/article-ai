@@ -49,6 +49,25 @@ const styleRequirements = {
 按照逻辑顺序组织内容，便于快速阅读和理解。
 语言要简洁明了，符合内部沟通的表达习惯。
 使用大小标题+正文自然段的形式组织内容，确保备忘录结构清晰有序。`,
+
+  business_email: `商务邮件应该专业、简洁，直接表达核心信息。
+包含清晰的主题行、恰当的称呼和结束语。
+使用正式但友好的语气，保持专业礼貌。
+按照逻辑顺序组织内容，确保信息传递清晰。
+段落简短，重点突出，便于快速阅读。
+包含必要的联系信息和后续行动建议。
+遵循标准商务邮件格式，包括问候语、正文和签名。
+语言要简洁明了，避免冗长和复杂的句式。`,
+
+  red_headed_document: `红头文件应严格遵循官方公文格式规范。
+包含完整的发文机关、文号、标题、正文、落款等要素。
+使用规范的公文语言，保持庄重严肃的语气。
+内容层次分明，条理清晰，逻辑严密。
+使用标准的公文结构，包括标题、主送机关、正文、落款等。
+语言要精准规范，符合公文写作规范。
+注重文件的权威性和严肃性，避免口语化表达。
+按照"发文字号-标题-主送单位-正文-落款"的标准格式组织内容。
+正文部分可使用编号条款形式，确保内容清晰有序。`,
 };
 
 // Function to generate prompt based on style
@@ -103,3 +122,5 @@ export const formal_report = (config: ArticleConfig) => getPromptByStyle(config,
 export const proposal = (config: ArticleConfig) => getPromptByStyle(config, 'proposal');
 export const announcement = (config: ArticleConfig) => getPromptByStyle(config, 'announcement');
 export const memo = (config: ArticleConfig) => getPromptByStyle(config, 'memo');
+export const business_email = (config: ArticleConfig) => getPromptByStyle(config, 'business_email');
+export const red_headed_document = (config: ArticleConfig) => getPromptByStyle(config, 'red_headed_document');

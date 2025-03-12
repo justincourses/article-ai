@@ -31,6 +31,8 @@ export interface ArticleConfig {
   exampleArticle?: string
   model: string
   wordCount: string
+  outline?: string
+  structureAnalysis?: string
   targetAudience: {
     ageRange: string
     gender: string

@@ -16,6 +16,8 @@ export const DEFAULT_ARTICLE_CONFIG = {
   exampleArticle: '',
   model: DEFAULT_MODELS.ARTICLE, // This will be kept in the config but not shown in UI
   wordCount: 'mini',
+  outline: '',
+  structureAnalysis: '',
   targetAudience: {
     ageRange: '',
     gender: '',

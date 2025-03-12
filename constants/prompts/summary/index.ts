@@ -109,7 +109,7 @@ export const summaryImagePromptRequirements = {
   enabled: `7. 在摘要最后，请额外生成一个适合用于AI图像生成的提示词，格式如下：
 
 ## 图像提示词
-[详细描述与文章主题相关的场景、物体或概念，使用英文，包含足够的细节以便AI生成高质量图像]`,
+[重要：必须在最开始就列出最关键的核心关键词（3-5个），用逗号分隔，例如 mountain landscape, sunset, dramatic clouds，然后再详细描述与文章主题相关的场景、物体或概念，使用英文，包含足够的细节以便AI生成高质量图像]`,
 
   disabled: '',
 };
