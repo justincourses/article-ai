@@ -39,6 +39,8 @@ export const STYLE_OPTIONS_BY_TYPE = {
     { value: 'proposal', label: '提案文书' },
     { value: 'announcement', label: '公告通知' },
     { value: 'memo', label: '备忘录' },
+    { value: 'business_email', label: '商务邮件' },
+    { value: 'red_headed_document', label: '红头文件' },
   ],
   video_script: [
     { value: 'educational', label: '教育视频' },
