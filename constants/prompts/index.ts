@@ -1,18 +1,22 @@
 /**
- * Central export point for all prompt modules
+ * Prompts for content generation
  */
 
-// Export common prompts
-export * from './common';
+import { getModelSpecificSystemPrompt as systemPrompt } from './common';
+import * as articlePrompts from './article';
+import * as summaryPrompts from './summary';
+import * as structurePrompts from './structure';
+import { determineContentLength, timeReference } from './common';
 
-// Export article prompts
-export * as articlePrompts from './article';
+// Export all prompts
+export {
+  systemPrompt,
+  articlePrompts,
+  summaryPrompts,
+  structurePrompts,
+  determineContentLength,
+  timeReference
+};
 
-// Export structure prompts
-export * as structurePrompts from './structure';
-
-// Export summary prompts
-export * as summaryPrompts from './summary';
-
-// Re-export systemPrompt from common for backward compatibility
-export { getModelSpecificSystemPrompt as systemPrompt } from './common';
+// Export the main template builder
+export { buildPromptTemplate } from './template-builder';

@@ -75,7 +75,8 @@ export async function POST(request: Request) {
       hasReviewer: false,
       reviewerType: "",
       reviewerRequirements: ""
-    }
+    },
+    outline: outline || ""
   };
 
   // Generate the prompt using the prompt utility
