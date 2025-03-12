@@ -202,6 +202,9 @@ export async function regenerateParagraph(
     段落标题：${paragraph.title}
     文章风格：${config.style}
     核心思路：${config.coreIdeas}
+    ${config.outline ? `文章结构：${config.outline}` : ''}
+    ${config.exampleArticle ? `参考文章：${config.exampleArticle}` : ''}
+    ${config.structureAnalysis ? `结构分析：${config.structureAnalysis}` : ''}
 
     请提供新的段落内容，保持与原文风格一致。
     `;
@@ -217,7 +220,10 @@ export async function regenerateParagraph(
           style: config.style,
           coreIdeas: config.coreIdeas,
           paragraphId: paragraphId,
-          paragraphTitle: paragraph.title
+          paragraphTitle: paragraph.title,
+          outline: config.outline,
+          exampleArticle: config.exampleArticle,
+          structureAnalysis: config.structureAnalysis
         },
         onProgress
       );
@@ -295,6 +301,10 @@ export async function generateMarkdownContent(
 
     ${paragraphs.map(p => `## ${p.title}\n${p.content}`).join('\n\n')}
 
+    ${config?.outline ? `文章结构：${config.outline}` : ''}
+    ${config?.exampleArticle ? `参考文章：${config.exampleArticle}` : ''}
+    ${config?.structureAnalysis ? `结构分析：${config.structureAnalysis}` : ''}
+
     要求：
     1. 保持原有段落结构
     2. 使用 Markdown 语法美化文章
@@ -312,7 +322,10 @@ export async function generateMarkdownContent(
         selectedModel,
         '/api/article',
         {
-          paragraphs: paragraphs.map(p => ({ title: p.title, content: p.content }))
+          paragraphs: paragraphs.map(p => ({ title: p.title, content: p.content })),
+          outline: config?.outline,
+          exampleArticle: config?.exampleArticle,
+          structureAnalysis: config?.structureAnalysis
         },
         onProgress
       );

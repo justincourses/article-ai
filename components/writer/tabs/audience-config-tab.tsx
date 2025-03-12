@@ -217,23 +217,27 @@ function AudienceConfigTab() {
           <AccordionContent>
             <div className="space-y-4 pt-2">
               <div className="space-y-2">
-                <Label htmlFor="writerType">博主类型</Label>
+                <Label htmlFor="writerType">作者类型</Label>
                 <Select
                   value={writerPersonaType}
                   onValueChange={(value: string) => handleWriterPersonaChange('type', value)}
                 >
                   <SelectTrigger id="writerType">
-                    <SelectValue placeholder="选择博主类型" />
+                    <SelectValue placeholder="选择作者类型" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="lifestyle">生活方式博主</SelectItem>
-                    <SelectItem value="tech">科技博主</SelectItem>
-                    <SelectItem value="fashion">时尚博主</SelectItem>
-                    <SelectItem value="food">美食博主</SelectItem>
-                    <SelectItem value="travel">旅行博主</SelectItem>
-                    <SelectItem value="fitness">健身博主</SelectItem>
-                    <SelectItem value="business">商业博主</SelectItem>
-                    <SelectItem value="education">教育博主</SelectItem>
+                    <SelectItem value="media">媒体人出身</SelectItem>
+                    <SelectItem value="tech">技术人出身</SelectItem>
+                    <SelectItem value="executive">企业高管出身</SelectItem>
+                    <SelectItem value="professor">教授出身</SelectItem>
+                    <SelectItem value="businessman">商人出身</SelectItem>
+                    <SelectItem value="entrepreneur">草根创业者</SelectItem>
+                    <SelectItem value="mother">全职妈妈</SelectItem>
+                    <SelectItem value="expert">行业专家</SelectItem>
+                    <SelectItem value="government">政府工作者</SelectItem>
+                    <SelectItem value="researcher">研究人员</SelectItem>
+                    <SelectItem value="doctor">医生出身</SelectItem>
+                    <SelectItem value="lawyer">律师出身</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -254,6 +258,9 @@ function AudienceConfigTab() {
                     <SelectItem value="storytelling">故事性强</SelectItem>
                     <SelectItem value="inspirational">励志鼓舞</SelectItem>
                     <SelectItem value="educational">教育启发</SelectItem>
+                    <SelectItem value="analytical">分析性强</SelectItem>
+                    <SelectItem value="academic">学术性</SelectItem>
+                    <SelectItem value="journalistic">新闻报道式</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -304,6 +311,14 @@ function AudienceConfigTab() {
                         <SelectItem value="operations">运营人员</SelectItem>
                         <SelectItem value="expert">领域专家</SelectItem>
                         <SelectItem value="client">客户</SelectItem>
+                        <SelectItem value="publisher">出版社编辑</SelectItem>
+                        <SelectItem value="government_official">机关领导</SelectItem>
+                        <SelectItem value="consultant">专业咨询顾问</SelectItem>
+                        <SelectItem value="press_bureau">新闻出版署</SelectItem>
+                        <SelectItem value="legal_advisor">法律顾问</SelectItem>
+                        <SelectItem value="academic_reviewer">学术审稿人</SelectItem>
+                        <SelectItem value="content_supervisor">内容监管人员</SelectItem>
+                        <SelectItem value="senior_management">高级管理层</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

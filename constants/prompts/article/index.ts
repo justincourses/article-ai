@@ -4,6 +4,7 @@
 
 import { commonLengthRequirements, timeReference, naturalWritingReview } from '../common/index';
 import { ArticleConfig } from '@/store/writer/config';
+import { integratePersonaAndReviewer } from './persona-integration';
 
 // Import prompts for each article type
 import * as socialMediaPrompts from './social_media/index';
@@ -24,7 +25,13 @@ export const articleBasePrompt = `根据以下要求生成一篇完整的文章�
 风格：{style}
 
 # 参考结构
-{outline}`;
+{outline}
+
+# 参考文章
+{exampleArticle}
+
+# 结构分析
+{structureAnalysis}`;
 
 // Requirements for article generation
 export const articleRequirements = {
@@ -35,6 +42,15 @@ export const articleRequirements = {
 
 // Length-specific requirements for articles
 export const articleLengthRequirements = commonLengthRequirements;
+
+// Example article reference requirements
+export const exampleArticleRequirements = `
+参考文章要求：
+1. 分析参考文章的内容特点、表达方式和风格特点
+2. 借鉴参考文章中有效的表达技巧和内容组织方式
+3. 结合参考文章的优点，优化当前文章的内容和表达
+4. 不要完全照搬参考文章的内容，而是取其精华
+5. 保持自己的创作风格，同时参考范文的优点`;
 
 // Type for prompt functions
 type PromptFunction = (config: ArticleConfig) => string;
@@ -77,7 +93,11 @@ export function getArticlePrompt(config: ArticleConfig): string {
     throw new Error(`No prompt found for style: ${style} in article type: ${articleType}`);
   }
 
-  return stylePrompt(config);
+  // Get the base prompt
+  const basePrompt = stylePrompt(config);
+
+  // Integrate writer persona and reviewer information
+  return integratePersonaAndReviewer(config, basePrompt);
 }
 
 // Export all prompts for each type

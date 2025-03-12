@@ -2,6 +2,17 @@
  * Common audience targeting requirements that can be reused across different content types
  */
 
+// Import writer persona and reviewer functions
+import * as writerPersonaModule from './writer-persona';
+export const {
+  generateWriterPersonaPrompt,
+  generateReviewerPrompt,
+  writerPersonaTypePrompts,
+  writerPersonaStylePrompts,
+  reviewerTypePrompts
+} = writerPersonaModule;
+export * from './writer-persona';
+
 // Basic audience targeting requirements
 export const audienceRequirements = {
   general: "适合广泛受众，使用通用语言和概念。",

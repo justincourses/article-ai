@@ -93,6 +93,19 @@ export const determineStyleType = (style: string): 'formal' | 'casual' | 'persua
   }
 };
 
+// Example article analysis requirements
+export const exampleArticleAnalysisRequirements = `
+如果提供了参考文章，请分析并总结以下方面：
+1. 文章的核心概念和关键词
+2. 文章的文风和口吻特点
+3. 文章的结构安排和段落组织方式
+4. 文章的侧重点和论述角度
+5. 文章的表达技巧和修辞手法
+6. 文章的优点和可借鉴之处
+
+请将分析结果放在结构的最后，作为创作参考。
+`;
+
 // Function to combine prompts based on requirements
 export const getStructurePrompt = ({
   time,
@@ -169,6 +182,18 @@ export const getStructurePrompt = ({
 4. 避免使用三级或更深层级的标题，保持结构清晰`;
   }
 
+  // Example article reference requirements
+  const exampleArticleReq = exampleArticle ? `
+参考文章结构要求：
+1. 分析参考文章的结构特点和组织方式
+2. 借鉴参考文章中有效的结构元素和段落安排
+3. 结合参考文章的优点，优化当前文章的结构
+4. 保持预设的结构框架，但参考范文进行适当调整
+5. 不要完全照搬参考文章的结构，而是取其精华` : '';
+
+  // Add example article analysis requirements if an example is provided
+  const analysisReq = exampleArticle ? exampleArticleAnalysisRequirements : '';
+
   // Replace placeholders in the base prompt
   return structureBasePrompt
     .replace('{topic}', topic)
@@ -187,6 +212,8 @@ ${styleReq}
 
 ${outlineDepthReq}
 
+${exampleArticleReq}
+
 请使用 Markdown 格式的缩进列表生成文章结构，确保结构清晰、层次分明，并符合所有要求。请直接返回内容，不要使用任何代码块（\`\`\`）包裹内容。
 
 在设计结构时，请注意以下几点：
@@ -195,6 +222,8 @@ ${outlineDepthReq}
 3. 结构应该服务于内容，而不是为了结构而结构
 4. 考虑到最终文章的可读性和自然度，避免过于复杂的层级结构
 5. 不要使用代码块格式，直接返回纯文本的大纲内容
+
+${analysisReq}
 
 ${naturalWritingReview}`;
 };
