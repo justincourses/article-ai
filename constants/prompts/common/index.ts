@@ -7,7 +7,8 @@ import * as styleModule from './style';
 export const {
   styleRequirements,
   detailedStyleRequirements,
-  naturalWritingReview
+  naturalWritingReview,
+  antiAIDetectionOptimization
 } = styleModule;
 export * as style from './style';
 

@@ -1,5 +1,7 @@
 import { ArticleConfig } from '@/store/writer/config';
 import { commonLengthRequirements, timeReference, naturalWritingReview, determineContentLength, getStyleAdjustmentsByTypeAndLength } from '../../common/index';
+import { exampleArticleRequirements } from '../index';
+import { formatTargetAudience } from '../../structure';
 
 // Base prompt for business articles
 const basePrompt = `作为一位拥有多年国家公务系统经验的撰稿人，对阅读对象有着极高的敏感性，请根据以下信息，生成一篇商业文章：
@@ -17,7 +19,11 @@ const basePrompt = `作为一位拥有多年国家公务系统经验的撰稿人
 文章风格：{style}
 
 大纲：
-{outline}`;
+{outline}
+
+参考文章：{exampleArticle}
+
+结构分析：{structureAnalysis}`;
 
 // Style-specific requirements
 const styleRequirements = {
@@ -72,7 +78,7 @@ const styleRequirements = {
 
 // Function to generate prompt based on style
 const getPromptByStyle = (config: ArticleConfig, style: string) => {
-  const { topic, coreIdeas, wordCount } = config;
+  const { topic, coreIdeas, wordCount, exampleArticle, outline, structureAnalysis, targetAudience } = config;
 
   // Get the appropriate requirements based on style
   const requirements = styleRequirements[style as keyof typeof styleRequirements] || styleRequirements.formal_report;
@@ -89,26 +95,38 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
   // Create the time reference
   const timeRef = timeReference(new Date().toISOString());
 
+  // Add example article requirements if an example is provided
+  const exampleReq = exampleArticle ? exampleArticleRequirements : '';
+
+  // Format target audience information
+  const targetAudienceInfo = targetAudience ? formatTargetAudience(targetAudience) : '';
+  const audienceReq = targetAudienceInfo ? `目标受众要求：\n请确保文章内容、语言风格和表达方式适合以下目标受众：\n${targetAudienceInfo}\n` : '';
+
   // Replace placeholders in the base prompt
   return basePrompt
     .replace('{topic}', topic)
     .replace('{coreIdeas}', coreIdeas)
     .replace('{timeRef}', timeRef)
-    .replace('{requirements}', `${requirements}\n\n${lengthReq}\n\n${styleAdjustments}`)
+    .replace('{requirements}', `${requirements}\n\n${lengthReq}\n\n${styleAdjustments}\n\n${audienceReq}\n\n${exampleReq}`)
     .replace('{style}', style)
-    .replace('{outline}', '') + `
+    .replace('{outline}', outline || '未提供大纲')
+    .replace('{exampleArticle}', exampleArticle || '未提供参考文章')
+    .replace('{structureAnalysis}', structureAnalysis || '未提供结构分析') + `
 
 请在生成商业文章前，确认以下几点：
 1. 文章内容是否完全符合主题和核心思路
-2. 文章是否包含了所有必要的商业内容要点
+2. 文章是否包含了所有必要的内容要点
 3. 文章结构是否合理，是否有清晰的引言、主体和结论
 4. 文章篇幅是否符合要求
-5. 语言是否专业准确，符合指定的商业风格
+5. 语言是否符合指定的商业风格
 6. 是否使用了正确的 Markdown 格式
 7. 是否满足了所有补充要求
-8. 文章是否提供了有价值的商业见解或建议
+8. 文章是否具有足够的专业性和说服力
 9. 涉及时间相关内容时，是否参考了提供的时间信息
 10. 是否遵循了文章类型和篇幅的风格调整要求
+11. 是否参考了提供的大纲结构
+12. 是否借鉴了参考文章的优点
+13. 文章内容和表达方式是否适合目标受众
 
 ${naturalWritingReview}
 

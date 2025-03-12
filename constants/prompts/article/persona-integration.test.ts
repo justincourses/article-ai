@@ -6,6 +6,7 @@
  */
 
 import { integratePersonaAndReviewer } from './persona-integration';
+import { ArticleConfig } from '@/store/writer/config';
 
 // Sample base prompt
 const sampleBasePrompt = `根据以下要求生成一篇完整的文章：
@@ -28,70 +29,117 @@ const sampleBasePrompt = `根据以下要求生成一篇完整的文章：
 # 未来展望
 # 结论`;
 
+// Default values for ArticleConfig properties
+const defaultConfig: Partial<ArticleConfig> = {
+  model: 'gpt-4',
+  wordCount: 'medium',
+  targetAudience: {
+    ageRange: '',
+    gender: '',
+    incomeLevel: '',
+    interests: [],
+    userTraits: ''
+  },
+  writerPersona: {
+    type: '',
+    style: '',
+    characteristics: ''
+  },
+  reviewerInfo: {
+    hasReviewer: false,
+    reviewerType: '',
+    reviewerRequirements: ''
+  }
+};
+
 // Example 1: With writer persona only
-const configWithWriterPersonaOnly = {
+const configWithWriterPersonaOnly: ArticleConfig = {
+  ...defaultConfig,
   topic: '人工智能在教育中的应用',
   coreIdeas: '探讨AI如何改变传统教育模式',
   articleType: 'social_media',
   style: 'technical',
+  exampleArticle: '',
   writerPersona: {
     type: 'tech',
     style: 'educational',
     characteristics: '有10年教育科技经验，熟悉AI应用'
   }
-};
+} as ArticleConfig;
 
 // Example 2: With reviewer info only
-const configWithReviewerInfoOnly = {
+const configWithReviewerInfoOnly: ArticleConfig = {
+  ...defaultConfig,
   topic: '人工智能在教育中的应用',
   coreIdeas: '探讨AI如何改变传统教育模式',
   articleType: 'social_media',
   style: 'technical',
+  exampleArticle: '',
   reviewerInfo: {
     hasReviewer: true,
     reviewerType: 'expert',
     reviewerRequirements: '确保技术准确性，避免过度夸大AI能力'
   }
-};
+} as ArticleConfig;
 
-// Example 3: With both writer persona and reviewer info
-const configWithBoth = {
-  topic: '人工智能在教育中的应用',
-  coreIdeas: '探讨AI如何改变传统教育模式',
-  articleType: 'social_media',
-  style: 'technical',
-  writerPersona: {
-    type: 'professor',
-    style: 'academic',
-    characteristics: '教育学教授，研究教育技术20年'
-  },
-  reviewerInfo: {
-    hasReviewer: true,
-    reviewerType: 'academic_reviewer',
-    reviewerRequirements: '确保学术严谨性，引用最新研究'
-  }
-};
+// Example 3: Testing different article types for anti-AI detection
+const articleTypeExamples: ArticleConfig[] = [
+  {
+    ...defaultConfig,
+    topic: '社交媒体营销策略',
+    coreIdeas: '如何利用社交媒体提升品牌影响力',
+    articleType: 'social_media',
+    style: 'casual',
+    exampleArticle: ''
+  } as ArticleConfig,
+  {
+    ...defaultConfig,
+    topic: '年度财务报告解析',
+    coreIdeas: '分析公司财务状况和未来展望',
+    articleType: 'business',
+    style: 'formal',
+    exampleArticle: ''
+  } as ArticleConfig,
+  {
+    ...defaultConfig,
+    topic: '毕业典礼致辞',
+    coreIdeas: '激励毕业生迎接未来挑战',
+    articleType: 'speech',
+    style: 'inspirational',
+    exampleArticle: ''
+  } as ArticleConfig,
+  {
+    ...defaultConfig,
+    topic: '产品介绍视频脚本',
+    coreIdeas: '展示产品特点和使用场景',
+    articleType: 'video_script',
+    style: 'persuasive',
+    exampleArticle: ''
+  } as ArticleConfig
+];
 
-// Example 4: With no writer persona or reviewer info
-const configWithNeither = {
-  topic: '人工智能在教育中的应用',
-  coreIdeas: '探讨AI如何改变传统教育模式',
-  articleType: 'social_media',
-  style: 'technical'
-};
+// Function to demonstrate the integration
+function demonstrateIntegration() {
+  console.log('Example 1: With writer persona only');
+  const result1 = integratePersonaAndReviewer(configWithWriterPersonaOnly, sampleBasePrompt);
+  console.log(result1);
+  console.log('\n-----------------------------------\n');
 
-/**
- * Example usage:
- *
- * const result1 = integratePersonaAndReviewer(configWithWriterPersonaOnly, sampleBasePrompt);
- * // Result will include writer persona but not reviewer info
- *
- * const result2 = integratePersonaAndReviewer(configWithReviewerInfoOnly, sampleBasePrompt);
- * // Result will include reviewer info but not writer persona
- *
- * const result3 = integratePersonaAndReviewer(configWithBoth, sampleBasePrompt);
- * // Result will include both writer persona and reviewer info
- *
- * const result4 = integratePersonaAndReviewer(configWithNeither, sampleBasePrompt);
- * // Result will be the same as the base prompt
- */
+  console.log('Example 2: With reviewer info only');
+  const result2 = integratePersonaAndReviewer(configWithReviewerInfoOnly, sampleBasePrompt);
+  console.log(result2);
+  console.log('\n-----------------------------------\n');
+
+  console.log('Example 3: Testing different article types for anti-AI detection');
+  articleTypeExamples.forEach((config, index) => {
+    console.log(`Article Type ${index + 1}: ${config.articleType}`);
+    const result = integratePersonaAndReviewer(config, sampleBasePrompt);
+    // Extract just the anti-AI part for brevity
+    const antiAIPart = result.split('# 最终优化\n')[1] || 'No anti-AI part found';
+    console.log('Anti-AI Strategy:', antiAIPart.substring(0, 100) + '...');
+    console.log('\n-----------------------------------\n');
+  });
+}
+
+// Uncomment to run the demonstration
+// demonstrateIntegration();

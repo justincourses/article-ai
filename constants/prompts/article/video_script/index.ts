@@ -1,5 +1,7 @@
 import { ArticleConfig } from '@/store/writer/config';
 import { commonLengthRequirements, timeReference, naturalWritingReview, determineContentLength, getStyleAdjustmentsByTypeAndLength } from '../../common/index';
+import { exampleArticleRequirements } from '../index';
+import { formatTargetAudience } from '../../structure';
 
 // Base prompt for video script articles
 const basePrompt = `作为一位资深编剧和小说家，请根据以下信息，生成一个视频脚本：
@@ -17,7 +19,11 @@ const basePrompt = `作为一位资深编剧和小说家，请根据以下信息
 脚本风格：{style}
 
 大纲：
-{outline}`;
+{outline}
+
+参考文章：{exampleArticle}
+
+结构分析：{structureAnalysis}`;
 
 // Style-specific requirements
 const styleRequirements = {
@@ -52,7 +58,7 @@ const styleRequirements = {
 
 // Function to generate prompt based on style
 const getPromptByStyle = (config: ArticleConfig, style: string) => {
-  const { topic, coreIdeas, wordCount } = config;
+  const { topic, coreIdeas, wordCount, exampleArticle, outline, structureAnalysis, targetAudience } = config;
 
   // Get the appropriate requirements based on style
   const requirements = styleRequirements[style as keyof typeof styleRequirements] || styleRequirements.educational;
@@ -69,32 +75,44 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
   // Create the time reference
   const timeRef = timeReference(new Date().toISOString());
 
+  // Add example article requirements if an example is provided
+  const exampleReq = exampleArticle ? exampleArticleRequirements : '';
+
+  // Format target audience information
+  const targetAudienceInfo = targetAudience ? formatTargetAudience(targetAudience) : '';
+  const audienceReq = targetAudienceInfo ? `目标观众要求：\n请确保视频脚本内容、语言风格和表达方式适合以下目标观众：\n${targetAudienceInfo}\n` : '';
+
   // Replace placeholders in the base prompt
   return basePrompt
     .replace('{topic}', topic)
     .replace('{coreIdeas}', coreIdeas)
     .replace('{timeRef}', timeRef)
-    .replace('{requirements}', `${requirements}\n\n${lengthReq}\n\n${styleAdjustments}`)
+    .replace('{requirements}', `${requirements}\n\n${lengthReq}\n\n${styleAdjustments}\n\n${audienceReq}\n\n${exampleReq}`)
     .replace('{style}', style)
-    .replace('{outline}', '') + `
+    .replace('{outline}', outline || '未提供大纲')
+    .replace('{exampleArticle}', exampleArticle || '未提供参考文章')
+    .replace('{structureAnalysis}', structureAnalysis || '未提供结构分析') + `
 
 请在生成视频脚本前，确认以下几点：
 1. 脚本内容是否完全符合主题和核心思路
 2. 脚本是否包含了所有必要的内容要点
-3. 脚本结构是否合理，是否有吸引人的开场和有力的结尾
+3. 脚本结构是否合理，是否有清晰的开场、主体和结尾
 4. 脚本篇幅是否符合要求
-5. 语言是否生动有趣，符合视频媒体的特点
+5. 语言是否符合指定的视频风格
 6. 是否使用了正确的 Markdown 格式
 7. 是否满足了所有补充要求
-8. 脚本是否考虑了视觉和听觉元素的配合
+8. 脚本是否具有足够的吸引力和视觉表现力
 9. 涉及时间相关内容时，是否参考了提供的时间信息
-10. 是否遵循了文章类型和篇幅的风格调整要求
+10. 是否遵循了视频类型和篇幅的风格调整要求
+11. 是否参考了提供的大纲结构
+12. 是否借鉴了参考文章的优点
+13. 脚本内容和表达方式是否适合目标观众
 
 ${naturalWritingReview}
 
 如果有任何未满足的要求，请调整脚本内容，直到所有要求都得到满足。
 
-直接返回 Markdown 格式的脚本内容，不要使用代码块。`;
+直接返回 Markdown 格式的视频脚本内容，不要使用代码块。`;
 };
 
 // Export style-specific prompt generators

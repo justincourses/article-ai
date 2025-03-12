@@ -1,6 +1,7 @@
 import { ArticleConfig } from '@/store/writer/config';
 import { commonLengthRequirements, timeReference, naturalWritingReview, determineContentLength, getStyleAdjustmentsByTypeAndLength } from '../../common/index';
 import { exampleArticleRequirements } from '../index';
+import { formatTargetAudience } from '../../structure';
 
 // Base prompt for social media articles
 const basePrompt = `作为一位经验丰富的社交媒体内容创作者，请根据以下信息，生成一篇社交媒体文章：
@@ -100,7 +101,7 @@ const styleRequirements = {
 
 // Function to generate prompt based on style
 const getPromptByStyle = (config: ArticleConfig, style: string) => {
-  const { topic, coreIdeas, wordCount, exampleArticle, outline, structureAnalysis } = config;
+  const { topic, coreIdeas, wordCount, exampleArticle, outline, structureAnalysis, targetAudience } = config;
 
   // Get the appropriate requirements based on style
   const requirements = styleRequirements[style as keyof typeof styleRequirements] || styleRequirements.formal;
@@ -120,12 +121,16 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
   // Add example article requirements if an example is provided
   const exampleReq = exampleArticle ? exampleArticleRequirements : '';
 
+  // Format target audience information
+  const targetAudienceInfo = targetAudience ? formatTargetAudience(targetAudience) : '';
+  const audienceReq = targetAudienceInfo ? `目标受众要求：\n请确保文章内容、语言风格和表达方式适合以下目标受众：\n${targetAudienceInfo}\n` : '';
+
   // Replace placeholders in the base prompt
   return basePrompt
     .replace('{topic}', topic)
     .replace('{coreIdeas}', coreIdeas)
     .replace('{timeRef}', timeRef)
-    .replace('{requirements}', `${requirements}\n\n${lengthReq}\n\n${styleAdjustments}\n\n${exampleReq}`)
+    .replace('{requirements}', `${requirements}\n\n${lengthReq}\n\n${styleAdjustments}\n\n${audienceReq}\n\n${exampleReq}`)
     .replace('{style}', style)
     .replace('{outline}', outline || '未提供大纲')
     .replace('{exampleArticle}', exampleArticle || '未提供参考文章')
@@ -144,6 +149,7 @@ const getPromptByStyle = (config: ArticleConfig, style: string) => {
 10. 是否遵循了文章类型和篇幅的风格调整要求
 11. 是否参考了提供的大纲结构
 12. 是否借鉴了参考文章的优点
+13. 文章内容和表达方式是否适合目标受众
 
 ${naturalWritingReview}
 

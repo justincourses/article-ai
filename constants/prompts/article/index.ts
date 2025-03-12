@@ -4,13 +4,14 @@
 
 import { commonLengthRequirements, timeReference, naturalWritingReview } from '../common/index';
 import { ArticleConfig } from '@/store/writer/config';
-import { integratePersonaAndReviewer } from './persona-integration';
+import { buildPromptTemplate } from '../template-builder';
 
 // Import prompts for each article type
 import * as socialMediaPrompts from './social_media/index';
 import * as speechPrompts from './speech/index';
 import * as businessPrompts from './business/index';
 import * as videoScriptPrompts from './video_script/index';
+import * as authenticPrompts from './authentic/index';
 
 // Base prompt for article generation
 export const articleBasePrompt = `根据以下要求生成一篇完整的文章：
@@ -71,6 +72,7 @@ const articleTypePrompts: ArticleTypePrompts = {
   speech: speechPrompts,
   business: businessPrompts,
   video_script: videoScriptPrompts,
+  authentic: authenticPrompts,
 };
 
 /**
@@ -79,26 +81,9 @@ const articleTypePrompts: ArticleTypePrompts = {
  * @returns The appropriate prompt for the given article type and style
  */
 export function getArticlePrompt(config: ArticleConfig): string {
-  const { articleType, style } = config;
-
-  // Get prompts for the article type
-  const typePrompts = articleTypePrompts[articleType];
-  if (!typePrompts) {
-    throw new Error(`No prompts found for article type: ${articleType}`);
-  }
-
-  // Get the specific style prompt
-  const stylePrompt = typePrompts[style];
-  if (!stylePrompt) {
-    throw new Error(`No prompt found for style: ${style} in article type: ${articleType}`);
-  }
-
-  // Get the base prompt
-  const basePrompt = stylePrompt(config);
-
-  // Integrate writer persona and reviewer information
-  return integratePersonaAndReviewer(config, basePrompt);
+  // Use the new template builder to generate the prompt
+  return buildPromptTemplate(config);
 }
 
 // Export all prompts for each type
-export { socialMediaPrompts, speechPrompts, businessPrompts, videoScriptPrompts };
+export { socialMediaPrompts, speechPrompts, businessPrompts, videoScriptPrompts, authenticPrompts };
