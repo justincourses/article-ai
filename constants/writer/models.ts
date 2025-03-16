@@ -18,6 +18,7 @@ export const DEFAULT_ARTICLE_CONFIG = {
   wordCount: 'mini',
   outline: '',
   structureAnalysis: '',
+  emojiUsage: 'none', // Default to not using emojis
   targetAudience: {
     ageRange: '',
     gender: '',
