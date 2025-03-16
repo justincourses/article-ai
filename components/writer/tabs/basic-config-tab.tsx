@@ -110,6 +110,7 @@ export function BasicConfigTab() {
           </SelectTrigger>
           <SelectContent>
             {WORD_COUNT_OPTIONS.map(option => (
+              // <SelectItem key={option.value} value={option.value} disabled={option.disabled}>{option.label}</SelectItem>
               <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
             ))}
           </SelectContent>
