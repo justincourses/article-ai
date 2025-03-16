@@ -87,6 +87,22 @@ const templateSections: TemplateSection[] = [
     order: 50
   },
   {
+    id: 'emojiUsage',
+    title: '表情符号使用',
+    content: (config) => {
+      const emojiUsage = config.emojiUsage || 'none';
+
+      const emojiInstructions = {
+        'none': '请不要在文章中使用任何表情符号或emoji。',
+        'light': '请在文章中适当地使用少量表情符号(emoji)，主要在关键点或段落结尾处，以增强表达效果，但不要过度使用。',
+        'heavy': '请在文章中大量使用表情符号(emoji)，可以在句子中、段落开头和结尾处使用，以增强文章的活泼感和表现力。'
+      };
+
+      return emojiInstructions[emojiUsage as keyof typeof emojiInstructions] || emojiInstructions.none;
+    },
+    order: 55
+  },
+  {
     id: 'targetAudience',
     title: '目标受众',
     content: (config) => {

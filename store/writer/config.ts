@@ -33,6 +33,7 @@ export interface ArticleConfig {
   wordCount: string
   outline?: string
   structureAnalysis?: string
+  emojiUsage: string
   targetAudience: {
     ageRange: string
     gender: string

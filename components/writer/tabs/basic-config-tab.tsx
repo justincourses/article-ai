@@ -8,6 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useWriterConfig } from '@/store/writer/config'
 import { ARTICLE_TYPES, STYLE_OPTIONS_BY_TYPE, WORD_COUNT_OPTIONS } from '@/constants/writer'
 
+// Define emoji usage options
+const EMOJI_USAGE_OPTIONS = [
+  { value: 'none', label: '不使用' },
+  { value: 'light', label: '轻度使用' },
+  { value: 'heavy', label: '大量使用' },
+]
+
 export function BasicConfigTab() {
   const { articleConfig, setArticleConfig } = useWriterConfig()
 
@@ -72,6 +79,25 @@ export function BasicConfigTab() {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="emojiUsage">
+          表情符号使用 <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          value={articleConfig.emojiUsage}
+          onValueChange={(value: string) => setArticleConfig({ ...articleConfig, emojiUsage: value })}
+        >
+          <SelectTrigger id="emojiUsage">
+            <SelectValue placeholder="选择表情符号使用程度" />
+          </SelectTrigger>
+          <SelectContent>
+            {EMOJI_USAGE_OPTIONS.map(option => (
+              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="wordCount">
           文章篇幅 <span className="text-red-500">*</span>
         </Label>
@@ -84,6 +110,7 @@ export function BasicConfigTab() {
           </SelectTrigger>
           <SelectContent>
             {WORD_COUNT_OPTIONS.map(option => (
+              // <SelectItem key={option.value} value={option.value} disabled={option.disabled}>{option.label}</SelectItem>
               <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
             ))}
           </SelectContent>

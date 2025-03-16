@@ -57,7 +57,7 @@ export const WORD_COUNT_OPTIONS = [
   { value: 'mini', label: '迷你 (300字以内)' },
   { value: 'short', label: '短文 (300-800字)' },
   { value: 'medium', label: '中等 (800-1500字)' },
-  { value: 'long', label: '长文 (1500-3000字)' },
+  { value: 'long', label: '长文 (1500-3000字)', disabled: true },
 ];
 
 export const MODEL_OPTIONS = [

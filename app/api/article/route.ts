@@ -59,6 +59,7 @@ export async function POST(request: Request) {
     exampleArticle: "",
     model: model,
     wordCount: wordCount || "medium",
+    emojiUsage: "none",
     targetAudience: targetAudience || {
       ageRange: "",
       gender: "",
