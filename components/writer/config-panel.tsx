@@ -23,7 +23,7 @@ export function ConfigPanel() {
         <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value={TABS.BASIC}>基本设置</TabsTrigger>
           <TabsTrigger value={TABS.AUDIENCE}>受众设置</TabsTrigger>
-          <TabsTrigger value={TABS.ADVANCED}>高级设置</TabsTrigger>
+          <TabsTrigger value={TABS.ADVANCED}>资料设置</TabsTrigger>
         </TabsList>
 
         <TabsContent value={TABS.BASIC} className="space-y-4">
