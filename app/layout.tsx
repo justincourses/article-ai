@@ -5,13 +5,13 @@ import { Metadata } from "next";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://article.zhaikr.com/"),
+  metadataBase: new URL("https://shinbun.news/"),
   title: "Article AI｜智能文章生成器",
   description:
     "A professional article rendering platform with advanced formatting and publishing capabilities.",
   openGraph: {
     type: "website",
-    url: "https://article.zhaikr.com/",
+    url: "https://shinbun.news/",
     title: "Article AI｜智能文章生成器",
     description: "A professional article rendering platform with advanced formatting and publishing capabilities.",
     images: [

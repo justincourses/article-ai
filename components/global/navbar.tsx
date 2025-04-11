@@ -45,11 +45,11 @@ export function Navbar() {
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
               <Link
-                href="https://justin-pro.notion.site/article-ai-schedule?v=1afd90f4c8cd80e1ba6e000c9ebf6a72&pvs=4"
+                href="https://image.zhaikr.com"
                 target="_blank"
                 className={navigationMenuTriggerStyle()}
               >
-                📅 进度跟踪
+                👑 智能绘图
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
