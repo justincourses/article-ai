@@ -1,83 +1,121 @@
 # Article Render
 
-## Introduction
+简体中文
 
-This project is a modern article rendering application with robust authentication powered by Clerk. It allows users to create, view, and manage articles with a clean, responsive interface. The application is built with Next.js App Router for optimal performance and SEO benefits.
+## 简介
 
-Clerk is a developer-first authentication and user management solution. It provides pre-built React components and hooks for sign-in, sign-up, user profile, and organization management. Clerk is designed to be easy to use and customize, and can be dropped into any React or Next.js application.
+Article Render 是一个使用 Next.js 15 构建的现代文章渲染应用，集成了 Clerk 提供的身份验证功能。它允许用户创建、查看和管理文章，并提供清晰、响应式的界面。
 
-This application demonstrates features of Clerk such as:
+## 本地开发
 
-- Fully functional auth flow with sign-in, sign-up, and protected content
-- Customized Clerk components with Tailwind CSS
-- Hooks for accessing user data and authentication state
-- Organizations for multi-tenant applications
-- Image optimization with Next.js Image component
+### 前置条件
 
-## Features
+- Node.js（推荐最新的 LTS 版本）
+- npm 或 yarn
+- Clerk 账户（用于身份验证）
 
-- **Authentication**: Secure user authentication with Clerk
-- **Article Management**: Create, edit, and delete articles
-- **Responsive Design**: Works on all device sizes
-- **Image Optimization**: Efficient image loading and caching
-- **SEO Friendly**: Built with Next.js App Router for optimal SEO
+### 安装与设置
 
-## Demo
+1. 克隆仓库：
+   ```bash
+   git clone https://github.com/yourusername/article-render
+   cd article-render
+   ```
 
-A hosted demo of this application is available at [https://article-render.vercel.app](https://article-render.vercel.app)
+2. 安装依赖：
+   ```bash
+   npm install
+   ```
 
-## Deploy
+3. 在根目录创建 `.env.local` 文件，并添加以下环境变量：
+   ```
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
+   CLERK_SECRET_KEY=your_secret_key
+   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+   NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
+   NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
+   ```
 
-Easily deploy the application to Vercel with the button below. You will need to set the required environment variables in the Vercel dashboard.
+### 本地运行
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyourusername%2Farticle-render&env=CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY&envDescription=Your%20Clerk%20application%20keys%2C%20accessible%20from%20dashboard.clerk.com.&envLink=https%3A%2F%2Fgithub.com%2Fyourusername%2Farticle-render%23running-the-application&demo-url=https%3A%2F%2Farticle-render.vercel.app%2F)
-
-## Running the application
+项目使用 Next.js 的 Turbopack 以提供更快的开发体验：
 
 ```bash
-git clone https://github.com/yourusername/article-render
-cd article-render
-npm install
+npm run dev
 ```
 
-To run the application locally, you need to:
+这将启动带有 Turbopack 的开发服务器。访问 http://localhost:3000 即可查看应用。
 
-1. Sign up for a Clerk account at [https://clerk.com](https://clerk.com).
-2. Go to the [Clerk dashboard](https://dashboard.clerk.com) and create an application.
-3. Set the required Clerk environment variables as shown in [the example `.env` file](./.env.example).
-4. Go to "Organization Settings" in your sidebar and enable Organizations if needed.
-5. `npm install` the required dependencies.
-6. `npm run dev` to launch the development server.
+其他可用的脚本：
+- `npm run build` - 构建生产环境的应用
+- `npm run start` - 启动生产服务器
+- `npm run lint` - 运行代码检查
 
-## Environment Variables
+## 在 Vercel 上部署
 
-Create a `.env.local` file in the root directory with the following variables:
+### 重要配置说明
 
+由于扩展了函数执行时间，本项目在 Vercel 上需要特殊配置：
+
+1. 项目使用 `vercel.json` 配置，为 API 路由设置了 800 秒的 `maxDuration`：
+   ```json
+   {
+     "functions": {
+       "app/api/**/*": {
+         "maxDuration": 800
+       }
+     }
+   }
+   ```
+
+2. **需要 Vercel Pro 套餐**：要使用 800 秒的函数执行时间，您必须：
+   - 订阅 Vercel Pro 套餐
+   - 为您的函数启用 **Fluid Compute**（流体计算）
+   - 没有 Pro 套餐，您将被限制在 60 秒
+   - 有 Pro 套餐但没有启用 Fluid Compute，您将被限制在 300 秒
+
+### 部署步骤
+
+1. 将代码推送到 Git 仓库（GitHub、GitLab 或 Bitbucket）
+
+2. 在 Vercel 控制面板中导入您的项目
+
+3. 配置所需的环境变量：
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+   - `CLERK_SECRET_KEY`
+   - 以及应用需要的其他环境变量
+
+4. 部署后，如果使用 Pro 套餐，请前往：
+   - 项目设置 → Functions → Function Execution（函数执行）
+   - 启用 Fluid Compute（流体计算）
+   - 这将允许 vercel.json 中指定的 800 秒执行时间
+
+5. 部署您的应用
+
+您也可以使用下面的部署按钮：
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjustincourses%2Farticle-ai&env=CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY&envDescription=Your%20Clerk%20application%20keys%2C%20accessible%20from%20dashboard.clerk.com.&envLink=https%3A%2F%2Fgithub.com%2Fjustincourses%2Farticle-ai%23%E6%9C%AC%E5%9C%B0%E8%BF%90%E8%A1%8C&demo-url=https%3A%2F%2Farticle-render.vercel.app%2F)
+
+## 图片配置
+
+应用已配置为使用来自 Unsplash 的图片。域名已在 `next.config.js` 中配置：
+
+```javascript
+images: {
+  remotePatterns: [
+    {
+      protocol: 'https',
+      hostname: 'images.unsplash.com',
+      port: '',
+    },
+    {
+      protocol: 'https',
+      hostname: 'plus.unsplash.com',
+      port: '',
+    },
+  ],
+},
 ```
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
-CLERK_SECRET_KEY=your_secret_key
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
-```
 
-## Learn more
-
-To learn more about the technologies used in this project, check out the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Clerk Documentation](https://clerk.com/docs)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-
-## Found an issue or have feedback?
-
-If you have found an issue with this repo or have feedback, please open an issue on the [GitHub repository](https://github.com/yourusername/article-render/issues).
-
-If it's a quick fix, such as a misspelled word or a broken link, feel free to create a [pull request](https://github.com/yourusername/article-render/pulls) with the solution. :rocket:
-
-## Connect with us
-
-You can discuss ideas, ask questions, and meet others from the community in our [Discord](https://discord.gg/yourdiscord).
-
-If you prefer, you can also find support through our [Twitter](https://twitter.com/yourusername), or you can [email](mailto:your.email@example.com) us!
+如果需要使用其他域名的图片，请将它们添加到 `next.config.js` 中的 `remotePatterns` 数组中。
