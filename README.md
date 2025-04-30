@@ -95,7 +95,7 @@ npm run dev
 
 您也可以使用下面的部署按钮：
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjustincourses%2Farticle-ai&env=CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY&envDescription=Your%20Clerk%20application%20keys%2C%20accessible%20from%20dashboard.clerk.com.&envLink=https%3A%2F%2Fgithub.com%2Fjustincourses%2Farticle-ai%23%E6%9C%AC%E5%9C%B0%E8%BF%90%E8%A1%8C&demo-url=https%3A%2F%2Farticle-render.vercel.app%2F)
+[Deploy with Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjustincourses%2Farticle-ai&env=CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY&envDescription=Your%20Clerk%20application%20keys%2C%20accessible%20from%20dashboard.clerk.com.&envLink=https%3A%2F%2Fgithub.com%2Fjustincourses%2Farticle-ai%23%E6%9C%AC%E5%9C%B0%E8%BF%90%E8%A1%8C&demo-url=https%3A%2F%2Farticle-render.vercel.app%2F)
 
 ## 图片配置
 
