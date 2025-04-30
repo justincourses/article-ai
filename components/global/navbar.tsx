@@ -45,7 +45,7 @@ export function Navbar() {
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
               <Link
-                href="https://image.zhaikr.com"
+                href="https://cn.vibany.com"
                 target="_blank"
                 className={navigationMenuTriggerStyle()}
               >
@@ -87,15 +87,7 @@ export function Navbar() {
           </SignInButton>
         </SignedOut>
 
-        <OrganizationSwitcher
-          appearance={{
-            elements: {
-              organizationPreviewAvatarBox: "size-6",
-            },
-          }}
-        />
         <UserButton
-          afterSignOutUrl="/"
           appearance={{
             elements: {
               userButtonAvatarBox: "size-6",
